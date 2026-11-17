@@ -57,7 +57,7 @@ export const WAYPOINTS: Waypoint[] = [
   { id: 4, title: 'Zona de Despacho', subtitle: 'Muelles, pick-up y pallets de bebidas', pos: [-0.6, EYE, -6.4], look: [-9.5, 1.3, -8.4] },
 ]
 
-export const ORBIT_VIEW = { pos: [30, 24, 31] as V3, target: [0, 2.5, 0] as V3 }
+export const ORBIT_VIEW = { pos: [-5, 44, 21] as V3, target: [-5, 0, 6] as V3 }
 
 export type Zone = 'ext' | 'sal' | 'gal' | 'ofi'
 export const ZONES: Record<Zone, string> = { ext: 'Exterior · Gdor. Tello', sal: 'Salón de ventas', gal: 'Galpón / depósito', ofi: 'Oficina' }
