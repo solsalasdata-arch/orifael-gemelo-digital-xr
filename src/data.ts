@@ -30,22 +30,24 @@ export const GATE2_X = (FRONT.gate2.x0 + FRONT.gate2.x1) / 2
 export const REBAR_X = [-6.25, -4.55, -2.7, 2.05, 4.2, 6.3]
 
 export const COL_ROW_X = -4.85
-export const COL_Z = [10, 5, 0, -5, -10]
+export const ROOF_Z0 = -8.9
+export const PATIO_WALL_H = 3.0
+export const COL_Z = [10, 5, 0, -4.5, ROOF_Z0]
 
-export const OFFICE = { x0: -IN_X, x1: -3.0, z0: 9.9, z1: IN_Z, h: 2.8, doorZ: [10.7, 11.7] as [number, number] }
+export const OFFICE = { x0: -IN_X, x1: -3.0, z0: 7.2, z1: 11.6, h: 2.8, doorZ: [7.9, 8.9] as [number, number] }
+export const KITCHEN = { x0: -IN_X, x1: -3.6, z0: -8.7, z1: -6.9, h: 2.6, doorZ: [-8.1, -7.3] as [number, number] }
+export const BATH = { x0: -IN_X, x1: -3.6, z0: -6.9, z1: -5.2, h: 2.6, doorZ: [-6.2, -5.4] as [number, number] }
 export const SALON = { x0: 2.05, x1: IN_X, z0: 8.4, z1: IN_Z, h: 3.0, openX: [2.4, 3.6] as [number, number] }
-export const SHELF_RUN = { x0: -IN_X, x1: -5.35, z0: -8.6, z1: 9.6, h: 2.6 }
-export const MEZZ = { x0: -IN_X, x1: -1.6, z0: -IN_Z, z1: -10.6, y: 2.35 }
-export const STAIRS = { x0: -IN_X, x1: -5.15, zBottom: -5.6, zTop: -10.6, h: MEZZ.y }
+export const SHELF_RUN = { x0: -IN_X, x1: -5.35, z0: -4.9, z1: 6.9, h: 2.6 }
 export const PICKUP = { x: 3.6, z: -11.2, rotY: Math.PI / 2 }
 export const STACKER = { x: -0.6, z: -2.2, rotY: 0 }
 
 export const BEV_PALLETS: [number, number][] = (() => {
   const out: [number, number][] = []
-  for (let z = 7.2; z > -8.4; z -= 1.12) for (const x of [3.25, 4.55]) out.push([x, Math.round(z * 100) / 100])
+  for (let z = 7.2; z > -7.6; z -= 1.12) for (const x of [3.25, 4.55]) out.push([x, Math.round(z * 100) / 100])
   return out
 })()
-export const CRATE_WALL = { x0: 5.3, x1: IN_X, z0: -8.4, z1: 7.8 }
+export const CRATE_WALL = { x0: 5.3, x1: IN_X, z0: -7.6, z1: 7.8 }
 
 export const SUN_DIR: V3 = (() => {
   const v = [-0.55, 0.74, 0.38]
@@ -61,9 +63,9 @@ export type Waypoint = { id: number; title: string; subtitle: string; pos: V3; l
 
 export const WAYPOINTS: Waypoint[] = [
   { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Frente de 13 m · portón principal y portón con puerta de escape', pos: [0.2, EYE, 23.2], look: [0.2, 2.7, 14] },
-  { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Nave única · estanterías izq. · bebidas der.', pos: [-1.6, EYE, 9.2], look: [-0.8, 1.5, -10] },
+  { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Nave única · apilador WIEBEL · estanterías izq. · bebidas der.', pos: [-1.6, EYE, 9.2], look: [-0.8, 1.5, -10] },
   { id: 3, title: 'Estructura de Cubierta (Losa y Vigas)', subtitle: 'Vista elevada a 3,6 m bajo la losa de H°A°', pos: [-1.4, 3.6, 6.5], look: [0.4, 4.6, -6] },
-  { id: 4, title: 'Zona de Despacho', subtitle: 'Apilador WIEBEL, entrepiso y utilitario al fondo', pos: [-1.0, EYE, -3.2], look: [1.4, 1.3, -14] },
+  { id: 4, title: 'Zona de Despacho', subtitle: 'Cocina · baño · patio trasero no techado', pos: [-0.4, EYE, -3.6], look: [1.4, 1.2, -14] },
 ]
 
 export const ORBIT_VIEW = { pos: [-26, 58, 58] as V3, target: [0, 0, 5] as V3 }
@@ -102,6 +104,14 @@ export const PHOTOS = {
   ofi_2: { file: 'ofi_2.jpg', zone: 'ofi', short: 'Oficina · muro', caption: 'Muro de la oficina en tablas de pallet' },
   ofi_3: { file: 'ofi_3.jpg', zone: 'ofi', short: 'Oficina · escritorio', caption: 'Escritorio de administración en la oficina' },
   ofi_4: { file: 'ofi_4.jpg', zone: 'ofi', short: 'Oficina · administración', caption: 'Puesto de administración y facturación' },
+  gal_10: { file: 'gal_10.jpg', zone: 'gal', short: 'Nave vacía', caption: 'Nave del depósito: ladrillo hueco, columnas de H°A° y pallets al fondo' },
+  gal_11: { file: 'gal_11.jpg', zone: 'gal', short: 'Fondo del depósito', caption: 'Fondo del depósito con pallets y cajones' },
+  gal_12: { file: 'gal_12.jpg', zone: 'gal', short: 'Patio trasero', caption: 'Fin de la losa y patio trasero no techado con utilitario y pallets' },
+  gal_13: { file: 'gal_13.jpg', zone: 'gal', short: 'Apilador WIEBEL', caption: 'Apilador eléctrico WIEBEL junto a los racks naranjas' },
+  gal_14: { file: 'gal_14.jpg', zone: 'gal', short: 'Estantería de madera', caption: 'Estantería de madera inclinada contra revestimiento de pallet' },
+  gal_15: { file: 'gal_15.jpg', zone: 'gal', short: 'Utilitario en depósito', caption: 'Utilitario rotulado y estibas junto al muro de ladrillo' },
+  sal_7: { file: 'sal_7.jpg', zone: 'sal', short: 'Salón · panorámica', caption: 'Salón de ventas: mostrador vitrina, estanterías de madera y heladeras' },
+  sal_8: { file: 'sal_8.jpg', zone: 'sal', short: 'Salón · góndolas', caption: 'Góndolas de madera con snacks, almacén y bebidas sobre el mostrador' },
   rel_3: { file: 'rel_3.jpg', zone: 'ext', short: 'Acceso con cartel ORIFAEL', caption: 'Carpeta "si" · Acceso al salón bajo el cartel ORIFAEL Mayorista y Minorista' },
   rel_1: { file: 'rel_1.jpg', zone: 'sal', short: 'Mostrador (relevamiento previo)', caption: 'Carpeta "si" · Mostrador con balanza, carteles de ofertas y cielorraso de madera' },
   rel_2: { file: 'rel_2.jpg', zone: 'sal', short: 'Atención y estanterías', caption: 'Carpeta "si" · Puesto de atención con mampara y estanterías de limpieza' },
@@ -146,7 +156,7 @@ export const HOTSPOTS: Hotspot[] = [
     title: 'Estructura de cubierta',
     body: 'Losa plana de H°A° con vigas a la vista · luz libre 12,5 m',
     pos: [0.4, 4.05, 0],
-    details: [['Cubierta', 'Losa plana H°A° · e = 20 cm'], ['Altura libre', '4,60 m'], ['Vigas', '5 u. transversales · c/ 5 m'], ['Columnas', 'H°A° con zócalo negro']],
+    details: [['Cubierta', 'Losa plana H°A° · 24 m de fondo'], ['Altura libre', '4,60 m'], ['Patio trasero', '6 m sin cubierta'], ['Columnas', 'H°A° con zócalo negro']],
     view: { pos: [-1.4, 2.4, 5.2], look: [0.4, 4.2, 0] },
   },
   {
@@ -207,7 +217,9 @@ export const COLLIDERS: Box2[] = [
   box(OFFICE.x0, OFFICE.x1 + 0.1, OFFICE.z0 - 0.1, OFFICE.z0 + 0.1, OFFICE.h),
   box(OFFICE.x1 - 0.1, OFFICE.x1 + 0.1, OFFICE.z0, OFFICE.doorZ[0], OFFICE.h),
   box(OFFICE.x1 - 0.1, OFFICE.x1 + 0.1, OFFICE.doorZ[1], OFFICE.z1, OFFICE.h),
-  box(-IN_X, -5.3, 12.6, 14.2, 1.0),
+  box(-IN_X, -5.3, 9.6, 11.2, 1.0),
+  box(OFFICE.x0, OFFICE.x1 + 0.1, OFFICE.z1 - 0.1, OFFICE.z1 + 0.1, OFFICE.h),
+  ...[KITCHEN, BATH].flatMap((k) => [box(k.x1 - 0.08, k.x1 + 0.08, k.z0, k.doorZ[0], k.h), box(k.x1 - 0.08, k.x1 + 0.08, k.doorZ[1], k.z1, k.h), box(k.x0, k.x1, k.z0 - 0.08, k.z0 + 0.08, k.h), box(k.x0, k.x1, k.z1 - 0.08, k.z1 + 0.08, k.h)]),
   box(SALON.x0 - 0.1, SALON.x0 + 0.1, SALON.z0, SALON.z1, SALON.h),
   box(SALON.x0, SALON.openX[0], SALON.z0 - 0.1, SALON.z0 + 0.1, SALON.h),
   box(SALON.openX[1], SALON.x1, SALON.z0 - 0.1, SALON.z0 + 0.1, SALON.h),
@@ -218,11 +230,9 @@ export const COLLIDERS: Box2[] = [
   ...COL_Z.map((z) => box(COL_ROW_X - 0.2, COL_ROW_X + 0.2, z - 0.2, z + 0.2)),
   ...BEV_PALLETS.map(([x, z]) => box(x - 0.62, x + 0.62, z - 0.52, z + 0.52, 2.6)),
   box(CRATE_WALL.x0, CRATE_WALL.x1, CRATE_WALL.z0, CRATE_WALL.z1, 2.2),
-  box(STAIRS.x0, STAIRS.x1 + 0.05, STAIRS.zTop, STAIRS.zBottom, STAIRS.h + 0.2),
-  box(MEZZ.x1 - 0.25, MEZZ.x1 + 0.05, MEZZ.z1 - 0.3, MEZZ.z1, MEZZ.y),
   box(PICKUP.x - 1.0, PICKUP.x + 1.0, PICKUP.z - 3.35, PICKUP.z + 2.95, 2.4),
   box(STACKER.x - 0.45, STACKER.x + 0.45, STACKER.z - 1.3, STACKER.z + 0.75, 2.4),
-  box(-1.8, 0.4, -12.6, -11.6, 1.0),
+  box(-1.8, 0.4, -8.4, -7.4, 1.0),
   box(FRONT.gate2.x1 + 0.2, FRONT.gate2.x1 + 0.9, 15.3, 16.2, 1.4),
 ]
 
@@ -231,17 +241,22 @@ export function zoneAt(x: number, z: number): string {
   if (Math.abs(x) > HALF_W || z < -HALF_D) return 'Exterior · linderos'
   if (x < OFFICE.x1 && z > OFFICE.z0) return 'Box de madera · Oficina'
   if (x > SALON.x0 && z > SALON.z0) return 'Salón de ventas · Mostrador'
-  if (z < -10.4) return x < MEZZ.x1 ? 'Entrepiso / Escalera' : 'Despacho · Vehículos'
+  if (z < ROOF_Z0) return 'Patio trasero no techado · Vehículos'
+  if (x < KITCHEN.x1 && z > KITCHEN.z0 && z < KITCHEN.z1) return 'Cocina (office)'
+  if (x < BATH.x1 && z > BATH.z0 && z < BATH.z1) return 'Baño'
+  if (z < -6.8) return 'Despacho'
   if (x < -4.4) return 'Estanterías de madera'
   if (x > 2.5) return 'Pallets de bebidas'
   return 'Nave central'
 }
 
 export const METRICS = [
-  { k: 'Superficie cubierta', v: '390 m²' },
-  { k: 'Volumen edificado', v: '1.795 m³' },
+  { k: 'Superficie cubierta', v: '312 m²' },
+  { k: 'Patio no techado', v: '78 m²' },
+  { k: 'Volumen edificado', v: '1.435 m³' },
   { k: 'Frente / fondo', v: '13,0 × 30,0 m' },
   { k: 'Altura libre bajo losa', v: '4,60 m' },
+  { k: 'Cocina + baño', v: '2 módulos cerrados' },
   { k: 'Volumen de stock', v: '420 m³' },
   { k: 'Pallets de bebidas', v: '28 · doble estiba' },
   { k: 'Portones de frente', v: '4,20 + 3,80 m' },

@@ -2,7 +2,7 @@ import { MeshReflectorMaterial } from '@react-three/drei'
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import {
-  BEAM_H, COL_ROW_X, COL_Z, D, FASCIA, FRONT, GATE1_X, GATE2_X, HALF_D, HALF_W, IN_X, IN_Z, REBAR_X, SIDEWALK, SLAB_T, SLAB_Y, STREET, W, WALL_T,
+  BEAM_H, COL_ROW_X, COL_Z, D, FASCIA, FRONT, GATE1_X, GATE2_X, HALF_D, HALF_W, IN_X, IN_Z, PATIO_WALL_H, REBAR_X, ROOF_Z0, SIDEWALK, SLAB_T, SLAB_Y, STREET, W, WALL_T,
   type V3,
 } from '../data'
 import { bimRoofMat, bimSolidMat, bimWallMat, columnMat, concreteBeamMat, darkSteelMat, plasterMat, roofMat, rubberMat, shutterMat, wallMat } from '../materials'
@@ -40,11 +40,12 @@ const plinthBlack = () => std('plinthB', () => new THREE.MeshStandardMaterial({ 
 function Floor() {
   const reflections = useStore((s) => s.reflections)
   const inXR = useStore((s) => s.inXR)
-  const map = useMemo(() => repeated(concreteTex(), (2 * IN_X) / 5, (2 * IN_Z) / 5), [])
-  const nrm = useMemo(() => repeated(concreteNormalTex(), (2 * IN_X) / 5, (2 * IN_Z) / 5), [])
+  const L = IN_Z - ROOF_Z0
+  const map = useMemo(() => repeated(concreteTex(), (2 * IN_X) / 5, L / 5), [L])
+  const nrm = useMemo(() => repeated(concreteNormalTex(), (2 * IN_X) / 5, L / 5), [L])
   return (
-    <mesh rotation-x={-Math.PI / 2} position-y={0.002} receiveShadow>
-      <planeGeometry args={[2 * IN_X, 2 * IN_Z]} />
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0.002, (IN_Z + ROOF_Z0) / 2]} receiveShadow>
+      <planeGeometry args={[2 * IN_X, L]} />
       {reflections && !inXR ? (
         <MeshReflectorMaterial
           map={map}
@@ -98,9 +99,12 @@ function Walls() {
   ]
   return (
     <group>
-      <B p={[-HALF_W + WALL_T / 2, SLAB_Y / 2, 0]} s={[WALL_T, SLAB_Y, D]} m={left} cast={!bim} />
-      <B p={[HALF_W - WALL_T / 2, SLAB_Y / 2, 0]} s={[WALL_T, SLAB_Y, D]} m={right} cast={!bim} />
-      <B p={[0, SLAB_Y / 2, -HALF_D + WALL_T / 2]} s={[W, SLAB_Y, WALL_T]} m={back} cast={!bim} />
+      <B p={[-HALF_W + WALL_T / 2, SLAB_Y / 2, (HALF_D + ROOF_Z0) / 2]} s={[WALL_T, SLAB_Y, HALF_D - ROOF_Z0]} m={left} cast={!bim} />
+      <B p={[HALF_W - WALL_T / 2, SLAB_Y / 2, (HALF_D + ROOF_Z0) / 2]} s={[WALL_T, SLAB_Y, HALF_D - ROOF_Z0]} m={right} cast={!bim} />
+      {[-1, 1].map((sd) => (
+        <B key={sd} p={[sd * (HALF_W - WALL_T / 2), PATIO_WALL_H / 2, (ROOF_Z0 - HALF_D) / 2]} s={[WALL_T, PATIO_WALL_H, ROOF_Z0 + HALF_D]} m={bim ? bimWallMat() : wallMat(HALF_D + ROOF_Z0, PATIO_WALL_H)} cast={!bim} />
+      ))}
+      <B p={[0, PATIO_WALL_H / 2, -HALF_D + WALL_T / 2]} s={[W, PATIO_WALL_H, WALL_T]} m={back} cast={!bim} />
       {pieces.map(([x0, x1, y0, y1], i) => (
         <B key={i} p={[(x0 + x1) / 2, (y0 + y1) / 2, zf]} s={[x1 - x0, y1 - y0, WALL_T]} m={fm(x1 - x0, y1 - y0)} cast={!bim} />
       ))}
@@ -121,14 +125,12 @@ function Structure() {
       out.push(boxAt(-IN_X + 0.12, SLAB_Y / 2, z, 0.25, SLAB_Y, 0.38))
       out.push(boxAt(IN_X - 0.12, SLAB_Y / 2, z, 0.25, SLAB_Y, 0.38))
     })
-    ;[-IN_X + 0.15, IN_X - 0.15].forEach((x) => out.push(boxAt(x, SLAB_Y / 2, -IN_Z + 0.15, 0.32, SLAB_Y, 0.32)))
     return out
   }, [])
   const plinths = useMemo(() => COL_Z.map((z) => boxAt(COL_ROW_X, 0.6, z, 0.37, 1.2, 0.37)), [])
   const beams = useMemo(() => {
     const out: THREE.Matrix4[] = COL_Z.map((z) => boxAt(0, SLAB_Y - BEAM_H / 2, z, 2 * IN_X, BEAM_H, 0.25))
-    out.push(boxAt(COL_ROW_X, SLAB_Y - BEAM_H / 2, 0, 0.25, BEAM_H, 2 * IN_Z))
-    out.push(boxAt(0, SLAB_Y - BEAM_H / 2, -IN_Z + 0.12, 2 * IN_X, BEAM_H, 0.25))
+    out.push(boxAt(COL_ROW_X, SLAB_Y - BEAM_H / 2, (IN_Z + ROOF_Z0) / 2, 0.25, BEAM_H, IN_Z - ROOF_Z0))
     return out
   }, [])
   const fc = [FRONT.colWide, FRONT.colMid, FRONT.colRight]
@@ -149,13 +151,13 @@ function Structure() {
       />
       {!cutRoof && (
         <>
-          <B p={[0, SLAB_Y + SLAB_T / 2, 0]} s={[W, SLAB_T, D]} m={bim ? bimRoofMat() : slabMat()} cast={!bim} />
+          <B p={[0, SLAB_Y + SLAB_T / 2, (HALF_D + ROOF_Z0) / 2]} s={[W, SLAB_T, HALF_D - ROOF_Z0]} m={bim ? bimRoofMat() : slabMat()} cast={!bim} />
           {!bim &&
             [
-              [-HALF_W + 0.08, 0.16, D],
-              [HALF_W - 0.08, 0.16, D],
-            ].map(([x, w, d], i) => <B key={i} p={[x, SLAB_Y + SLAB_T + 0.2, 0]} s={[w, 0.4, d]} m={slabMat()} />)}
-          {!bim && <B p={[0, SLAB_Y + SLAB_T + 0.2, -HALF_D + 0.08]} s={[W, 0.4, 0.16]} m={slabMat()} />}
+              [-HALF_W + 0.08, 0.16, HALF_D - ROOF_Z0],
+              [HALF_W - 0.08, 0.16, HALF_D - ROOF_Z0],
+            ].map(([x, w, d], i) => <B key={i} p={[x, SLAB_Y + SLAB_T + 0.2, (HALF_D + ROOF_Z0) / 2]} s={[w, 0.4, d]} m={slabMat()} />)}
+          {!bim && <B p={[0, SLAB_Y + SLAB_T + 0.2, ROOF_Z0 + 0.08]} s={[W, 0.4, 0.16]} m={slabMat()} />}
         </>
       )}
       <Rebars />

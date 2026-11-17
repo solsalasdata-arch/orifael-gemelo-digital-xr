@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import {
-  BEV_PALLETS, CRATE_WALL, FRONT, GATE1_X, HALF_D, HOTSPOTS, MEDIA, MEZZ, METRICS, OFFICE, PHOTOS, PHOTO_KEYS, PICKUP, SALON, SHELF_RUN, SIDEWALK, STACKER, STAIRS, STREET, VIDEO, WAYPOINTS, ZONES, ZONE_HOTSPOT,
+  BEV_PALLETS, CRATE_WALL, FRONT, GATE1_X, HALF_D, BATH, HOTSPOTS, KITCHEN, MEDIA, METRICS, ROOF_Z0, OFFICE, PHOTOS, PHOTO_KEYS, PICKUP, SALON, SHELF_RUN, SIDEWALK, STACKER, STREET, VIDEO, WAYPOINTS, ZONES, ZONE_HOTSPOT,
   mediaIndex, thumbSrc, zoneAt, type Zone,
 } from '../data'
 import { isBlocked } from '../scene/Navigation'
@@ -301,8 +301,10 @@ function MiniMap() {
             <rect key={`${x}${z}`} x={x - 0.6} y={z - 0.5} width={1.2} height={1} fill="#1d5eaa" opacity={0.9} />
           ))}
           {r(CRATE_WALL.x0, CRATE_WALL.x1, CRATE_WALL.z0, CRATE_WALL.z1, '#c3202b', 0.8)}
-          {r(MEZZ.x0, MEZZ.x1, MEZZ.z0, MEZZ.z1, '#9a9792', 0.7)}
-          {r(STAIRS.x0, STAIRS.x1, STAIRS.zTop, STAIRS.zBottom, '#c4c1bb')}
+          {r(-6.25, 6.25, -14.75, ROOF_Z0, '#6f8f6a', 0.28)}
+          <line x1={-6.5} x2={6.5} y1={ROOF_Z0} y2={ROOF_Z0} stroke="#A8E6CF" strokeWidth={0.12} strokeDasharray="0.5 0.35" />
+          {r(KITCHEN.x0, KITCHEN.x1, KITCHEN.z0, KITCHEN.z1, '#d9cfb8', 0.85)}
+          {r(BATH.x0, BATH.x1, BATH.z0, BATH.z1, '#cfe3ea', 0.85)}
           <rect x={PICKUP.x - 0.95} y={PICKUP.z - 3.3} width={1.9} height={6.2} fill="#e8e8e8" rx={0.3} />
           {r(STACKER.x - 0.4, STACKER.x + 0.4, STACKER.z - 1.2, STACKER.z + 0.7, '#e0441d')}
           {HOTSPOTS.map((h) => (
@@ -319,11 +321,13 @@ function MiniMap() {
             ['NAVE', -3, 1],
             ['BEB', 0, -4],
             ['SALÓN', 11.6, -4.2],
-            ['OF.', 12.3, 4.7],
-            ['DESP.', -12.5, -1.5],
+            ['OF.', 9.4, 4.7],
+            ['COCINA', -7.8, 4.9],
+            ['BAÑO', -6.05, 4.9],
+            ['PATIO', -12.2, -1.2],
           ] as [string, number, number][]
         ).map(([t, u, v]) => (
-          <text key={t} x={u} y={v + 0.4} textAnchor="middle" fontSize={1.1} fill="#A8E6CF" fontWeight={800}>
+          <text key={t} x={u} y={v + 0.4} textAnchor="middle" fontSize={t.length > 4 ? 0.75 : 1.0} fill={t === 'COCINA' || t === 'BAÑO' ? '#0b0f14' : '#A8E6CF'} fontWeight={800}>
             {t}
           </text>
         ))}

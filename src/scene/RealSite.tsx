@@ -2,9 +2,9 @@ import { useTexture } from '@react-three/drei'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import {
-  BEV_PALLETS, COL_Z, CRATE_WALL, IN_X, IN_Z, MEZZ, OFFICE, PHOTOS, photoSrc, PICKUP, SALON, SHELF_RUN, SLAB_Y, STACKER, STAIRS, type PhotoKey,
+  BEV_PALLETS, COL_Z, CRATE_WALL, BATH, IN_X, IN_Z, KITCHEN, OFFICE, ROOF_Z0, PHOTOS, photoSrc, PICKUP, SALON, SHELF_RUN, SLAB_Y, STACKER, type PhotoKey,
 } from '../data'
-import { boxMat, columnMat, concreteBeamMat, darkSteelMat, glassMat, palletMat, plankMat, rackBeamMat, rackUprightMat, rubberMat, shutterMat, wallMat, whiteMat, yellowMat } from '../materials'
+import { boxMat, darkSteelMat, glassMat, palletMat, plankMat, rackBeamMat, rackUprightMat, rubberMat, wallMat, whiteMat, yellowMat } from '../materials'
 import { useStore } from '../store'
 import { crateTex, offerTex } from '../textures'
 import { InstancedBoxes, boxAt } from './Instanced'
@@ -167,10 +167,9 @@ function RackSection({ z0, z1, seed }: { z0: number; z1: number; seed: number })
 function ShelfRun() {
   const { z0, z1 } = SHELF_RUN
   const parts: [number, number, 'wood' | 'rack'][] = [
-    [z0, -4.1, 'wood'],
-    [-3.9, 0.6, 'rack'],
-    [0.8, 5.1, 'wood'],
-    [5.3, z1, 'rack'],
+    [z0, -0.6, 'rack'],
+    [-0.4, 3.2, 'wood'],
+    [3.4, z1, 'rack'],
   ]
   return (
     <group>
@@ -214,7 +213,7 @@ function Office() {
   const { x0, x1, z0, z1, h, doorZ } = OFFICE
   const t = 0.1
   const wood = plankMat(3, 1.2)
-  const winZ: [number, number] = [12.5, 13.8]
+  const winZ: [number, number] = [9.6, 10.9]
   const east: [number, number, number, number][] = [
     [z0, doorZ[0], 0, h],
     [doorZ[1], winZ[0], 0, h],
@@ -226,9 +225,11 @@ function Office() {
   if (bim) return null
   return (
     <group>
-      <mesh position={[(x0 + x1) / 2, h / 2, z0]} material={wood} castShadow receiveShadow>
-        <boxGeometry args={[x1 - x0, h, t]} />
-      </mesh>
+      {[z0, z1].map((zz) => (
+        <mesh key={zz} position={[(x0 + x1) / 2, h / 2, zz]} material={wood} castShadow receiveShadow>
+          <boxGeometry args={[x1 - x0, h, t]} />
+        </mesh>
+      ))}
       {east.map(([a, b, y0, y1], i) => (
         <mesh key={i} position={[x1, (y0 + y1) / 2, (a + b) / 2]} material={wood} castShadow receiveShadow>
           <boxGeometry args={[t, y1 - y0, b - a]} />
@@ -243,16 +244,16 @@ function Office() {
       <mesh position={[x1 + 0.42, 1.05, doorZ[0] + 0.05]} rotation-y={-1.2} material={plankMat(1, 1)} castShadow>
         <boxGeometry args={[0.95, 2.1, 0.05]} />
       </mesh>
-      <mesh position={[-5.8, 0.38, 13.4]} material={plankMat(2, 1)} castShadow receiveShadow>
+      <mesh position={[-5.8, 0.38, 10.4]} material={plankMat(2, 1)} castShadow receiveShadow>
         <boxGeometry args={[0.9, 0.76, 1.6]} />
       </mesh>
-      <mesh position={[-6.0, 0.98, 13.2]} material={darkSteelMat()}>
+      <mesh position={[-6.0, 0.98, 10.2]} material={darkSteelMat()}>
         <boxGeometry args={[0.05, 0.36, 0.55]} />
       </mesh>
-      <mesh position={[-5.75, 0.82, 13.9]} material={whiteMat()}>
+      <mesh position={[-5.75, 0.82, 10.9]} material={whiteMat()}>
         <boxGeometry args={[0.4, 0.12, 0.35]} />
       </mesh>
-      <pointLight position={[-4.6, 2.55, 12.3]} intensity={5} distance={6} decay={1.6} color="#fff1dc" />
+      <pointLight position={[-4.6, 2.55, 9.4]} intensity={5} distance={6} decay={1.6} color="#fff1dc" />
     </group>
   )
 }
@@ -342,6 +343,16 @@ function Salon() {
           <PhotoCrop name="lucky" width={1.02} position={[0, 0, 0.055]} glow={0.85} />
         </group>
       </group>
+      {[
+        ['hoynofia', ['HOY NO SE FÍA', 'Mañana sí'], '#f2f2ea', '#c3202b', 3.55],
+        ['ofq', ['OFERTA QUILMES', '1 L retornable'], '#1d5eaa', '#ffffff', 4.75],
+        ['ofc', ['COCA-COLA 2,25 L', 'Precio mayorista'], '#c3202b', '#ffffff', 5.85],
+      ].map(([id, lines, bg, fg, x]) => (
+        <mesh key={id as string} position={[x as number, 2.15, 8.48]}>
+          <planeGeometry args={[1.0, 0.5]} />
+          <meshStandardMaterial map={offerTex(id as string, lines as string[], bg as string, fg as string)} emissiveMap={offerTex(id as string, lines as string[], bg as string, fg as string)} emissive="#ffffff" emissiveIntensity={0.35} toneMapped={false} />
+        </mesh>
+      ))}
       <group position={[3.15, 0, 9.75]}>
         {[0, 1, 2, 3, 4].map((i) => (
           <mesh key={i} position={[0, 0.25 + i * 0.22, 0]} material={i % 2 ? glassMat() : candy}>
@@ -353,54 +364,74 @@ function Salon() {
   )
 }
 
-function Stairs() {
-  const { x0, x1, zBottom, zTop, h } = STAIRS
-  const steps = 13
-  const rise = h / steps
-  const run = (zBottom - zTop) / steps
-  const m = useMemo(() => {
-    const out: THREE.Matrix4[] = []
-    for (let i = 0; i < steps; i++) {
-      const y = rise * (i + 1)
-      out.push(boxAt((x0 + x1) / 2, y / 2, zBottom - run * (i + 0.5), x1 - x0, y, run))
-    }
-    return out
-  }, [x0, x1, zBottom, rise, run])
-  const rail = useMemo(() => {
-    const out: THREE.Matrix4[] = []
-    const xr = x1 - 0.04
-    for (let i = 0; i <= steps; i += 3) out.push(boxAt(xr, rise * i + 0.5, zBottom - run * i, 0.04, 1, 0.04))
-    const len = Math.hypot(zBottom - zTop, h)
-    out.push(
-      new THREE.Matrix4().compose(
-        new THREE.Vector3(xr, h / 2 + 1, (zBottom + zTop) / 2),
-        new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.atan2(h, zBottom - zTop), 0, 0)),
-        new THREE.Vector3(0.05, 0.05, len),
-      ),
-    )
-    out.push(boxAt((MEZZ.x0 + MEZZ.x1) / 2 + (x1 - MEZZ.x0) / 2, MEZZ.y + 1.0, MEZZ.z1 - 0.04, MEZZ.x1 - x1, 0.05, 0.05))
-    out.push(boxAt(MEZZ.x1 - 0.04, MEZZ.y + 1.0, (MEZZ.z0 + MEZZ.z1) / 2, 0.05, 0.05, MEZZ.z1 - MEZZ.z0))
-    for (let x = x1 + 0.3; x < MEZZ.x1; x += 0.6) out.push(boxAt(x, MEZZ.y + 0.5, MEZZ.z1 - 0.04, 0.04, 1, 0.04))
-    for (let z = MEZZ.z0 + 0.3; z < MEZZ.z1; z += 0.6) out.push(boxAt(MEZZ.x1 - 0.04, MEZZ.y + 0.5, z, 0.04, 1, 0.04))
-    return out
-  }, [x1, zBottom, zTop, h, rise, run])
-  const storage = useMemo(() => {
-    const out: THREE.Matrix4[] = []
-    for (let i = 0; i < 5; i++) out.push(boxAt(MEZZ.x0 + 0.9 + i * 0.85, MEZZ.y + 0.32, MEZZ.z0 + 0.6, 0.7, 0.6, 0.55))
-    for (let i = 0; i < 3; i++) out.push(boxAt(MEZZ.x0 + 1.2 + i * 0.85, MEZZ.y + 0.32, MEZZ.z0 + 1.5, 0.7, 0.6, 0.55))
-    return out
-  }, [])
+function Module({ k, label, kind }: { k: typeof KITCHEN; label: string; kind: 'kitchen' | 'bath' }) {
+  const bim = useStore((st) => st.bim)
+  const tile = useMemo(() => new THREE.MeshStandardMaterial({ color: kind === 'bath' ? '#e8ecec' : '#ece6da', roughness: 0.6 }), [kind])
+  const { x0, x1, z0, z1, h, doorZ } = k
+  const t = 0.1
+  if (bim) return null
+  const east: [number, number, number, number][] = [
+    [z0, doorZ[0], 0, h],
+    [doorZ[1], z1, 0, h],
+    [doorZ[0], doorZ[1], 2.1, h],
+  ]
   return (
     <group>
-      <InstancedBoxes matrices={m} material={concreteBeamMat()} />
-      <InstancedBoxes matrices={rail} material={darkSteelMat()} />
-      <mesh position={[(MEZZ.x0 + MEZZ.x1) / 2, MEZZ.y - 0.1, (MEZZ.z0 + MEZZ.z1) / 2]} material={concreteBeamMat()} castShadow receiveShadow>
-        <boxGeometry args={[MEZZ.x1 - MEZZ.x0, 0.2, MEZZ.z1 - MEZZ.z0]} />
+      {[z0, z1].map((z) => (
+        <mesh key={z} position={[(x0 + x1) / 2, h / 2, z]} material={tile} castShadow receiveShadow>
+          <boxGeometry args={[x1 - x0, h, t]} />
+        </mesh>
+      ))}
+      {east.map(([a, b, y0, y1], i) => (
+        <mesh key={i} position={[x1, (y0 + y1) / 2, (a + b) / 2]} material={tile} castShadow receiveShadow>
+          <boxGeometry args={[t, y1 - y0, b - a]} />
+        </mesh>
+      ))}
+      <mesh position={[(x0 + x1) / 2, h + 0.03, (z0 + z1) / 2]} material={tile}>
+        <boxGeometry args={[x1 - x0, 0.06, z1 - z0]} />
       </mesh>
-      <mesh position={[MEZZ.x1 - 0.15, (MEZZ.y - 0.2) / 2, MEZZ.z1 - 0.15]} material={columnMat()} castShadow>
-        <boxGeometry args={[0.3, MEZZ.y - 0.2, 0.3]} />
+      <mesh position={[x1 + 0.38, 1.05, doorZ[0] + 0.02]} rotation-y={-1.25} material={plankMat(1, 1)} castShadow>
+        <boxGeometry args={[0.8, 2.08, 0.04]} />
       </mesh>
-      <InstancedBoxes matrices={storage} material={boxMat(1)} />
+      <LightPanel id={`mod-${kind}`} lines={[label, kind === 'bath' ? 'Sanitario' : 'Office del personal']} style="zone" size={[0.9, 0.3]} position={[x1 + 0.07, 2.35, (doorZ[0] + doorZ[1]) / 2]} rotationY={Math.PI / 2} glow={0.8} res={[600, 200]} />
+      {kind === 'kitchen' ? (
+        <group>
+          <mesh position={[x0 + 0.35, 0.45, (z0 + z1) / 2]} material={whiteMat()} castShadow>
+            <boxGeometry args={[0.6, 0.9, z1 - z0 - 0.3]} />
+          </mesh>
+          <mesh position={[x0 + 0.35, 0.92, (z0 + z1) / 2]} material={darkSteelMat()}>
+            <boxGeometry args={[0.62, 0.04, z1 - z0 - 0.28]} />
+          </mesh>
+          <mesh position={[x0 + 1.4, 0.75, z0 + 0.4]} material={whiteMat()} castShadow>
+            <boxGeometry args={[0.6, 1.5, 0.6]} />
+          </mesh>
+        </group>
+      ) : (
+        <group>
+          <mesh position={[x0 + 0.4, 0.22, (z0 + z1) / 2]} material={whiteMat()} castShadow>
+            <cylinderGeometry args={[0.2, 0.17, 0.44, 16]} />
+          </mesh>
+          <mesh position={[x0 + 0.12, 0.6, (z0 + z1) / 2]} material={whiteMat()}>
+            <boxGeometry args={[0.2, 0.4, 0.42]} />
+          </mesh>
+          <mesh position={[x0 + 1.4, 0.82, z1 - 0.3]} material={whiteMat()}>
+            <boxGeometry args={[0.45, 0.14, 0.35]} />
+          </mesh>
+        </group>
+      )}
+      <pointLight position={[(x0 + x1) / 2, h - 0.3, (z0 + z1) / 2]} intensity={2.5} distance={3.5} color="#f4f6ff" />
+    </group>
+  )
+}
+
+function Patio() {
+  const rough = useMemo(() => new THREE.MeshStandardMaterial({ color: '#a7a39b', roughness: 1 }), [])
+  return (
+    <group>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.004, (ROOF_Z0 - IN_Z) / 2]} material={rough} receiveShadow>
+        <planeGeometry args={[2 * IN_X, IN_Z + ROOF_Z0]} />
+      </mesh>
+      <InstancedBoxes matrices={useMemo(() => [0, 1, 2, 3].map((i) => boxAt(-4.6 + (i % 2) * 1.25, 0.07 + Math.floor(i / 2) * 0.14, -13.6, 1.2, 0.14, 1.0)), [])} material={palletMat()} />
     </group>
   )
 }
@@ -447,13 +478,12 @@ function Stacker() {
 }
 
 function Despacho() {
-  const bim = useStore((s) => s.bim)
   return (
     <group>
-      <mesh position={[-0.7, 0.45, -12.1]} material={plankMat(2, 1)} castShadow receiveShadow>
+      <mesh position={[-0.7, 0.45, -7.9]} material={plankMat(2, 1)} castShadow receiveShadow>
         <boxGeometry args={[2.2, 0.9, 1.0]} />
       </mesh>
-      <mesh position={[-1.3, 0.98, -12.2]} material={boxMat(0)} castShadow>
+      <mesh position={[-1.3, 0.98, -8.0]} material={boxMat(0)} castShadow>
         <boxGeometry args={[0.5, 0.18, 0.4]} />
       </mesh>
       <group position={[0.8, 0, -9.6]} rotation-y={0.4}>
@@ -466,12 +496,7 @@ function Despacho() {
           <boxGeometry args={[0.05, 1.1, 0.05]} />
         </mesh>
       </group>
-      {!bim && (
-        <mesh position={[1.2, 1.8, -IN_Z + 0.04]} material={shutterMat(3.6, 3.6)} castShadow>
-          <boxGeometry args={[3.6, 3.6, 0.05]} />
-        </mesh>
-      )}
-      <LightPanel id="desp" lines={['DESPACHO', 'Carga y descarga · Vehículos']} style="zone" size={[2.4, 0.6]} position={[1.2, 3.95, -IN_Z + 0.1]} glow={0.8} res={[900, 225]} />
+      <LightPanel id="desp" lines={['DESPACHO', 'Patio trasero no techado →']} style="zone" size={[2.4, 0.6]} position={[1.2, 3.95, ROOF_Z0 + 0.2]} glow={0.8} res={[900, 225]} />
     </group>
   )
 }
@@ -479,7 +504,7 @@ function Despacho() {
 function Lamps() {
   return (
     <group>
-      {[11, 5.5, 0, -5.5, -11].map((z) => (
+      {[8.5, 3, -2.5, -8].map((z) => (
         <group key={z}>
           <mesh position={[-1.0, SLAB_Y - BEAM_TOP, z + 2.5]}>
             <boxGeometry args={[1.2, 0.05, 0.3]} />
@@ -502,13 +527,14 @@ export function RealSite() {
       <CrateWall />
       <Office />
       <Salon />
-      <Stairs />
+      <Module k={KITCHEN} label="COCINA" kind="kitchen" />
+      <Module k={BATH} label="BAÑO" kind="bath" />
+      <Patio />
       <Van />
       <Stacker />
       <Despacho />
       <Lamps />
       <PhotoMural photo="gal_1" position={[IN_X - 0.06, 3.35, -1.8]} rotationY={-Math.PI / 2} height={1.25} />
-      <PhotoMural photo="rel_4" position={[-3.4, 3.2, -IN_Z + 0.06]} height={1.25} />
     </group>
   )
 }
