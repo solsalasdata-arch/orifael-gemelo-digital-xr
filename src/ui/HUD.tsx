@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { HOTSPOTS, PHOTOS, PHOTO_KEYS, ZONES, ZONE_HOTSPOT, photoSrc, thumbSrc, type Zone, PICKUP, STAIRS, BEV_PALLETS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE } from '../data'
+import { HOTSPOTS, PHOTOS, PHOTO_KEYS, ZONES, ZONE_HOTSPOT, photoSrc, thumbSrc, type Zone, PICKUP, STAIRS, BEV_PALLETS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE, GATE_R, WALL_SHELVES } from '../data'
 import { isBlocked } from '../scene/Navigation'
 import { useStore } from '../store'
 import { xrStore } from '../xr'
@@ -299,7 +299,11 @@ function MiniMap() {
       </div>
       <svg viewBox="-17 -13 34 33" className="w-full cursor-crosshair rounded-[3px] bg-black/35" onClick={onClick}>
         <rect x={-15} y={-10} width={30} height={20} fill="rgba(168,230,207,0.05)" stroke="#A8E6CF" strokeOpacity={0.7} strokeWidth={0.25} />
-        <rect x={-ENTRANCE.w / 2} y={9.8} width={ENTRANCE.w} height={0.4} fill="#0b0f14" />
+        <rect x={ENTRANCE.x - ENTRANCE.w / 2} y={9.8} width={ENTRANCE.w} height={0.4} fill="#0b0f14" />
+        <rect x={GATE_R.x - GATE_R.w / 2} y={9.8} width={GATE_R.w} height={0.4} fill="#8e979f" />
+        {WALL_SHELVES.map(([z0, z1]) => (
+          <rect key={z0} x={-14.85} y={z0} width={0.75} height={z1 - z0} fill="#8a6644" opacity={0.9} />
+        ))}
         {DOCKS.map((d) => (
           <rect key={d} x={d - DOCK_W / 2} y={-10.2} width={DOCK_W} height={0.4} fill="#f2c230" opacity={0.8} />
         ))}
@@ -318,9 +322,9 @@ function MiniMap() {
         <text x={0} y={17.6} textAnchor="middle" fontSize={1.4} fill="#cbd5dc" fontWeight={700}>
           Gdor. Tello 437
         </text>
-        {[-7.8, 0, 7.25].map((x, i) => (
+        {[-12.2, -2.5, 9.9].map((x, i) => (
           <text key={x} x={x} y={0.5} textAnchor="middle" fontSize={1.3} fill="#A8E6CF" fontWeight={800}>
-            {['P1', 'PC', 'P3'][i]}
+            {['EST', 'NAVE', 'BEB'][i]}
           </text>
         ))}
         {HOTSPOTS.map((h) => (

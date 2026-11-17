@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import {
-  BAY_CENTERS, BOTTOM_CHORD, D, DOCKS, DOCK_H, DOCK_W, EAVE, ENTRANCE, HALF_D, HALF_W, OPEN_DOCK, RIDGE, ROOF_ANGLE,
+  BAY_CENTERS, BOTTOM_CHORD, D, DOCKS, DOCK_H, DOCK_W, EAVE, ENTRANCE, GATE_R, HALF_D, HALF_W, OPEN_DOCK, RIDGE, ROOF_ANGLE,
   SKYLIGHT_BAYS, SUN_DIR, TRUSS_X, W, WALL_T, topY,
 } from '../data'
 import {
@@ -79,7 +79,7 @@ function wallSegmentsX(z: number, openings: { c: number; w: number; h: number }[
 }
 
 function Walls() {
-  const front = wallSegmentsX(HALF_D + WALL_T / 2, [{ c: ENTRANCE.x, w: ENTRANCE.w, h: ENTRANCE.h }])
+  const front = wallSegmentsX(HALF_D + WALL_T / 2, [{ c: ENTRANCE.x, w: ENTRANCE.w, h: ENTRANCE.h }, { c: GATE_R.x, w: GATE_R.w, h: GATE_R.h }])
   const back = wallSegmentsX(-HALF_D - WALL_T / 2, DOCKS.map((c) => ({ c, w: DOCK_W, h: DOCK_H })))
   const gable = useMemo(() => {
     const e = HALF_D + WALL_T
@@ -192,7 +192,7 @@ function Columns() {
     const p: [number, number][] = []
     TRUSS_X.forEach((x) => {
       const cx = Math.max(-HALF_W + 0.2, Math.min(HALF_W - 0.2, x))
-      if (Math.abs(cx - ENTRANCE.x) > ENTRANCE.w / 2 + 0.3) p.push([cx, HALF_D - 0.18])
+      if (Math.abs(cx - ENTRANCE.x) > ENTRANCE.w / 2 + 0.3 && Math.abs(cx - GATE_R.x) > GATE_R.w / 2 + 0.3) p.push([cx, HALF_D - 0.18])
       if (DOCKS.every((d) => Math.abs(cx - d) > DOCK_W / 2 + 0.3)) p.push([cx, -HALF_D + 0.18])
     })
     ;[-5, 0, 5].forEach((z) => p.push([-HALF_W + 0.2, z], [HALF_W - 0.2, z]))

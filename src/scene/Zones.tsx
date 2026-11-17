@@ -80,15 +80,15 @@ function Signage() {
           res={[1536, 300]}
         />
       </Hanging>
-      {[-7.8, 0, 7.25].map((x, i) => {
+      {[-11.4, -2.5, 9.9].map((x, i) => {
         const labels = [
-          ['1', 'PASILLO 1', 'Estanterías de madera · Secos'],
-          ['2', 'PASILLO CENTRAL', 'Circulación principal'],
-          ['3', 'PASILLO 3', 'Pallets de bebidas'],
+          ['A', 'ESTANTERÍAS', 'Madera · Secos y almacén'],
+          ['N', 'NAVE CENTRAL', 'Circulación · Hormigón alisado'],
+          ['B', 'BEBIDAS', 'Pallets Quilmes · Coca-Cola'],
         ][i]
         return (
-          <Hanging key={i} x={x} z={RACK_Z1 + 0.6} y={4.9} half={0.9}>
-            <LightPanel id={`aisle-${i}`} lines={labels} style="aisle" size={[2.4, 0.6]} position={[x, 4.9, RACK_Z1 + 0.6]} twoSided glow={1.1} />
+          <Hanging key={i} x={x} z={-0.5} y={4.9} half={0.9}>
+            <LightPanel id={`aisle-${i}`} lines={labels} style="aisle" size={[2.4, 0.6]} position={[x, 4.9, -0.5]} twoSided glow={1.1} />
           </Hanging>
         )
       })}

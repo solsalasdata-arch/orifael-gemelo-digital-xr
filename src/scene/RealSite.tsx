@@ -1,7 +1,7 @@
 import { useTexture } from '@react-three/drei'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { EAVE, ENTRANCE, HALF_D, HALF_W, PHOTOS, photoSrc, PICKUP, STAIRS, BEV_PALLETS, WALL_T, type PhotoKey } from '../data'
+import { EAVE, ENTRANCE, GATE_R, WALL_SHELVES, HALF_D, HALF_W, PHOTOS, photoSrc, PICKUP, STAIRS, BEV_PALLETS, WALL_T, type PhotoKey } from '../data'
 import {
   bimSolidMat, concreteBeamMat, darkSteelMat, glassMat, palletMat, plankMat, plasterMat, rubberMat, shutterMat, whiteMat, columnMat,
 } from '../materials'
@@ -82,38 +82,56 @@ function Facade() {
   const top = EAVE + 0.25
   const crateMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#1f3f66', roughness: 0.6 }), [])
   const yellowBoxMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f2c230', roughness: 0.8 }), [])
-  const sideW = HALF_W + WALL_T - ENTRANCE.w / 2
+  const L0 = ENTRANCE.x - ENTRANCE.w / 2
+  const L1 = ENTRANCE.x + ENTRANCE.w / 2
+  const R0 = GATE_R.x - GATE_R.w / 2
+  const R1 = GATE_R.x + GATE_R.w / 2
+  const dl = GATE_R.x - GATE_R.door / 2
+  const dr = GATE_R.x + GATE_R.door / 2
+  const zc = HALF_D + WALL_T / 2
+  const plaster: [number, number, number][] = [[L1, R0, 0], [L0, L1, ENTRANCE.h], [R0, R1, GATE_R.h], [-HALF_W - WALL_T, HALF_W + WALL_T, top - 0.9]]
   return (
     <group>
-      {!bim && (
-        <>
-          {[-1, 1].map((s) => (
-            <mesh key={s} position={[s * (ENTRANCE.w / 2 + sideW / 2), top / 2, zf]} material={plasterMat(sideW, top)} receiveShadow>
-              <planeGeometry args={[sideW, top]} />
-            </mesh>
-          ))}
-          <mesh position={[0, (top + ENTRANCE.h) / 2, zf]} material={plasterMat(ENTRANCE.w, top - ENTRANCE.h)}>
-            <planeGeometry args={[ENTRANCE.w, top - ENTRANCE.h]} />
+      {!bim &&
+        plaster.map(([x0, x1, y0], i) => (
+          <mesh key={i} position={[(x0 + x1) / 2, (y0 + top) / 2, zf + i * 0.002]} material={plasterMat(x1 - x0, top - y0)} receiveShadow>
+            <planeGeometry args={[x1 - x0, top - y0]} />
           </mesh>
-        </>
-      )}
-      <group position={[0, 5.95, zf + 0.1]}>
-        <mesh material={darkSteelMat()} castShadow>
-          <boxGeometry args={[5.9, 2.4, 0.12]} />
+        ))}
+      <mesh position={[(R0 + dl) / 2, GATE_R.h / 2, zc]} material={shutterMat(dl - R0, GATE_R.h)} castShadow receiveShadow>
+        <boxGeometry args={[dl - R0, GATE_R.h, 0.06]} />
+      </mesh>
+      <mesh position={[(dr + R1) / 2, GATE_R.h / 2, zc]} material={shutterMat(R1 - dr, GATE_R.h)} castShadow receiveShadow>
+        <boxGeometry args={[R1 - dr, GATE_R.h, 0.06]} />
+      </mesh>
+      <mesh position={[GATE_R.x, (2.1 + GATE_R.h) / 2, zc]} material={shutterMat(GATE_R.door, GATE_R.h - 2.1)} castShadow>
+        <boxGeometry args={[GATE_R.door, GATE_R.h - 2.1, 0.06]} />
+      </mesh>
+      {[dl, dr].map((x) => (
+        <mesh key={x} position={[x, 1.05, zc + 0.04]} material={darkSteelMat()}>
+          <boxGeometry args={[0.06, 2.1, 0.08]} />
         </mesh>
-        <PhotoCrop name="sign" width={5.75} position={[0, 0, 0.065]} glow={0.55} />
-        {[-2.2, 0, 2.2].map((x) => (
-          <mesh key={x} position={[x, 1.3, 0.35]} rotation-x={0.5} material={darkSteelMat()}>
+      ))}
+      <mesh position={[GATE_R.x, 2.1, zc + 0.04]} material={darkSteelMat()}>
+        <boxGeometry args={[GATE_R.door + 0.06, 0.06, 0.08]} />
+      </mesh>
+      <mesh position={[dr - 0.04, 1.04, zc - 0.44]} rotation-y={Math.PI / 2} material={shutterMat(GATE_R.door, 2.06)} castShadow>
+        <boxGeometry args={[GATE_R.door - 0.04, 2.06, 0.04]} />
+      </mesh>
+      <mesh position={[GATE_R.x, GATE_R.h + 0.15, zf + 0.12]} material={darkSteelMat()} castShadow>
+        <boxGeometry args={[GATE_R.w + 0.3, 0.3, 0.24]} />
+      </mesh>
+      <group position={[(L0 + R1) / 2, 6.2, zf + 0.1]}>
+        <mesh material={darkSteelMat()} castShadow>
+          <boxGeometry args={[7.6, 3.1, 0.12]} />
+        </mesh>
+        <PhotoCrop name="sign" width={7.4} position={[0, 0, 0.065]} glow={0.55} />
+        {[-2.8, 0, 2.8].map((x) => (
+          <mesh key={x} position={[x, 1.65, 0.35]} rotation-x={0.5} material={darkSteelMat()}>
             <boxGeometry args={[0.5, 0.08, 0.25]} />
           </mesh>
         ))}
       </group>
-      <mesh position={[-7.4, 2.2, zf + 0.04]} material={shutterMat(5.2, 4.4)} castShadow>
-        <boxGeometry args={[5.2, 4.4, 0.06]} />
-      </mesh>
-      <mesh position={[-7.4, 4.5, zf + 0.12]} material={darkSteelMat()} castShadow>
-        <boxGeometry args={[5.5, 0.3, 0.24]} />
-      </mesh>
       <mesh position={[0, top + 0.12, zf + 0.8]} material={concreteBeamMat()} castShadow receiveShadow>
         <boxGeometry args={[2 * HALF_W + 0.6, 0.24, 1.6]} />
       </mesh>
@@ -124,13 +142,13 @@ function Facade() {
         </mesh>
       ))}
       <pointLight position={[0, top - 0.6, zf + 1.6]} intensity={14} distance={11} color="#eef2ff" />
-      <mesh position={[0, ENTRANCE.h - 0.45, zf + 0.06]} material={shutterMat(ENTRANCE.w, 0.9)} castShadow>
+      <mesh position={[ENTRANCE.x, ENTRANCE.h - 0.45, zf + 0.06]} material={shutterMat(ENTRANCE.w, 0.9)} castShadow>
         <boxGeometry args={[ENTRANCE.w + 0.2, 0.9, 0.08]} />
       </mesh>
-      <mesh position={[0, ENTRANCE.h + 0.12, zf + 0.12]} material={darkSteelMat()} castShadow>
+      <mesh position={[ENTRANCE.x, ENTRANCE.h + 0.12, zf + 0.12]} material={darkSteelMat()} castShadow>
         <boxGeometry args={[ENTRANCE.w + 0.4, 0.26, 0.24]} />
       </mesh>
-      <group position={[ENTRANCE.w / 2 + 0.9, 0, zf + 0.9]} rotation-y={-0.25}>
+      <group position={[L1 + 0.9, 0, zf + 0.9]} rotation-y={-0.25}>
         <group rotation-x={-0.1}>
           <mesh position={[0, 0.72, -0.01]} material={plankMat(1, 1)} castShadow>
             <boxGeometry args={[0.82, 1.44, 0.04]} />
@@ -138,7 +156,7 @@ function Facade() {
           <PhotoCrop name="chalk" height={1.36} position={[0, 0.74, 0.015]} glow={0.25} />
         </group>
       </group>
-      <group position={[-ENTRANCE.w / 2 - 0.6, 0, zf + 0.45]}>
+      <group position={[L0 - 0.6, 0, zf + 0.45]}>
         {[0, 1, 2, 3].map((i) => (
           <mesh key={i} position={[0, 0.17 + i * 0.35, 0]} material={crateMat} castShadow>
             <boxGeometry args={[0.5, 0.33, 0.38]} />
@@ -149,7 +167,7 @@ function Facade() {
         </mesh>
         <PhotoCrop name="crates" height={1.74} position={[0, 0.88, 0.2]} glow={0.25} />
       </group>
-      <group position={[ENTRANCE.w / 2 + 1.75, 1.35, zf + 0.04]}>
+      <group position={[(L1 + R0) / 2 + 0.6, 1.35, zf + 0.04]}>
         <mesh material={whiteMat()}>
           <boxGeometry args={[1.95, 1.8, 0.04]} />
         </mesh>
@@ -345,7 +363,17 @@ function BevPallets() {
           <mesh position-y={0.15 + 0.6} material={mats[i % 4]} castShadow receiveShadow>
             <boxGeometry args={[1.16, 1.2, 0.96]} />
           </mesh>
-          {i % 2 === 0 && (
+          {i >= 4 && (
+            <group position-y={1.35}>
+              <mesh position-y={0.075} material={palletMat()} castShadow receiveShadow>
+                <boxGeometry args={[1.2, 0.15, 1.0]} />
+              </mesh>
+              <mesh position-y={0.15 + 0.6} material={mats[(i + 2) % 4]} castShadow receiveShadow>
+                <boxGeometry args={[1.16, 1.2, 0.96]} />
+              </mesh>
+            </group>
+          )}
+          {i < 4 && i % 2 === 0 && (
             <mesh position-y={1.35 + 0.15} material={mats[(i + 1) % 4]} castShadow>
               <boxGeometry args={[1.16, 0.3, 0.96]} />
             </mesh>
@@ -456,7 +484,7 @@ function Commercial() {
           <boxGeometry args={[0.58, 1.4, 0.03]} />
         </mesh>
       </group>
-      <group position={[0, 0, 9.55]} rotation-y={Math.PI}>
+      <group position={[6.6, 0, 9.55]} rotation-y={Math.PI}>
         {[7.55, 6.8].map((x) => (
           <group key={x} position={[x, 0, 0]}>
             <mesh position-y={1.0} material={fridgeMat} castShadow>
@@ -533,12 +561,15 @@ export function RealSite() {
       <BevPallets />
       <Commercial />
       <Wainscot />
+      {WALL_SHELVES.map(([z0, z1], i) => (
+        <Shelving key={i} position={[-14.5, 0, (z0 + z1) / 2]} rotationY={Math.PI / 2} width={z1 - z0 - 0.1} white={false} seed={40 + i} bottles={i === 1} />
+      ))}
       <Crates />
       <SalonCeiling />
       <PhotoMural photo="ext_4" position={[8.6, 2.2, HALF_D + WALL_T + 0.08]} height={1.9} />
-      <PhotoMural photo="gal_4" position={[-HALF_W + 0.06, 2.4, -2.7]} rotationY={Math.PI / 2} height={1.9} />
+      <PhotoMural photo="gal_4" position={[-HALF_W + 0.06, 4.6, -2.7]} rotationY={Math.PI / 2} height={1.9} />
       <PhotoMural photo="sal_2" position={[HALF_W - 0.06, 2.4, 2.4]} rotationY={-Math.PI / 2} height={1.9} />
-      <PhotoMural photo="gal_1" position={[-HALF_W + 0.06, 2.4, 1.3]} rotationY={Math.PI / 2} height={1.9} />
+      <PhotoMural photo="gal_1" position={[-HALF_W + 0.06, 4.6, 1.9]} rotationY={Math.PI / 2} height={1.9} />
       <PhotoMural photo="gal_3" position={[-12.6, 2.6, -HALF_D + 0.06]} height={1.9} />
     </group>
   )
