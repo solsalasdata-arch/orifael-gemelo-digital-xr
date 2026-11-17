@@ -158,9 +158,9 @@ function Panel() {
       </Section>
 
       <Section title="Relevamiento fotográfico real">
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-5 gap-1.5">
           {PHOTO_KEYS.map((k) => {
-            const h = HOTSPOTS.find((x) => x.photo === k)
+            const h = HOTSPOTS.find((x) => x.id === PHOTOS[k].hotspot)
             return (
               <button
                 key={k}
@@ -168,7 +168,7 @@ function Panel() {
                 onClick={() => h && st().openHotspot(h.id, true)}
                 className="group relative overflow-hidden rounded-lg ring-1 ring-white/10 hover:ring-mint"
               >
-                <img src={`${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`} alt={PHOTOS[k].short} className="h-16 w-full object-cover transition group-hover:scale-105" draggable={false} />
+                <img src={`${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`} alt={PHOTOS[k].short} className="h-14 w-full object-cover transition group-hover:scale-105" draggable={false} />
                 {h && <span className="absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-mint text-[9px] font-extrabold text-[#0d1a14]">{h.id}</span>}
               </button>
             )

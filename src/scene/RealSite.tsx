@@ -6,7 +6,7 @@ import {
   bimSolidMat, concreteBeamMat, darkSteelMat, glassMat, palletMat, plankMat, plasterMat, rubberMat, shutterMat, whiteMat, columnMat,
 } from '../materials'
 import { useStore } from '../store'
-import { bevPackTex, offerTex, orifaelSignTex } from '../textures'
+import { bevPackTex } from '../textures'
 import { InstancedBoxes, boxAt } from './Instanced'
 import { LightPanel } from './Zones'
 
@@ -35,11 +35,53 @@ function PhotoMural({ photo, position, rotationY = 0, height = 2.2 }: { photo: P
   )
 }
 
+type Crop = [number, number, number, number]
+const CROPS = {
+  sign: ['actual_1', [243, 229, 943, 580]],
+  posters: ['actual_1', [586, 1017, 903, 1300]],
+  chalk: ['actual_1', [897, 929, 1143, 1443]],
+  crates: ['actual_1', [0, 536, 229, 1600]],
+  atencion: ['actual_2', [729, 954, 1011, 1200]],
+  filmando: ['actual_2', [1185, 835, 1290, 1040]],
+  lucky: ['actual_2', [957, 193, 1357, 471]],
+  personal: ['actual_2', [1021, 1030, 1207, 1200]],
+  freezer: ['actual_3', [0, 971, 450, 1543]],
+  fridge: ['actual_3', [455, 590, 620, 1157]],
+} satisfies Record<string, [PhotoKey, Crop]>
+
+function useCrop(name: keyof typeof CROPS) {
+  const [photo, [x0, y0, x1, y1]] = CROPS[name]
+  const base = useTexture(photoUrl(photo))
+  return useMemo(() => {
+    const img = base.image as { width: number; height: number }
+    const t = base.clone()
+    t.colorSpace = THREE.SRGBColorSpace
+    t.anisotropy = 8
+    t.repeat.set((x1 - x0) / img.width, (y1 - y0) / img.height)
+    t.offset.set(x0 / img.width, 1 - y1 / img.height)
+    t.needsUpdate = true
+    return { tex: t, aspect: (x1 - x0) / (y1 - y0) }
+  }, [base, x0, y0, x1, y1])
+}
+
+function PhotoCrop({ name, height, width, position, rotationY = 0, glow = 0.3 }: { name: keyof typeof CROPS; height?: number; width?: number; position: [number, number, number]; rotationY?: number; glow?: number }) {
+  const { tex, aspect } = useCrop(name)
+  const h = height ?? (width ?? 1) / aspect
+  const w = width ?? h * aspect
+  return (
+    <mesh position={position} rotation-y={rotationY}>
+      <planeGeometry args={[w, h]} />
+      <meshStandardMaterial map={tex} emissiveMap={tex} emissive="#ffffff" emissiveIntensity={glow} roughness={0.7} toneMapped={false} />
+    </mesh>
+  )
+}
+
 function Facade() {
   const bim = useStore((s) => s.bim)
-  const sign = useMemo(() => orifaelSignTex(), [])
   const zf = HALF_D + WALL_T + 0.012
   const top = EAVE + 0.25
+  const crateMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#1f3f66', roughness: 0.6 }), [])
+  const yellowBoxMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f2c230', roughness: 0.8 }), [])
   const sideW = HALF_W + WALL_T - ENTRANCE.w / 2
   return (
     <group>
@@ -55,15 +97,12 @@ function Facade() {
           </mesh>
         </>
       )}
-      <group position={[0, 5.85, zf + 0.1]}>
+      <group position={[0, 5.95, zf + 0.1]}>
         <mesh material={darkSteelMat()} castShadow>
-          <boxGeometry args={[11.2, 2.3, 0.12]} />
+          <boxGeometry args={[5.9, 2.4, 0.12]} />
         </mesh>
-        <mesh position-z={0.065}>
-          <planeGeometry args={[11, 2.1]} />
-          <meshStandardMaterial map={sign} emissiveMap={sign} emissive="#ffffff" emissiveIntensity={0.45} roughness={0.6} toneMapped={false} />
-        </mesh>
-        {[-4.2, 0, 4.2].map((x) => (
+        <PhotoCrop name="sign" width={5.75} position={[0, 0, 0.065]} glow={0.55} />
+        {[-2.2, 0, 2.2].map((x) => (
           <mesh key={x} position={[x, 1.3, 0.35]} rotation-x={0.5} material={darkSteelMat()}>
             <boxGeometry args={[0.5, 0.08, 0.25]} />
           </mesh>
@@ -75,11 +114,30 @@ function Facade() {
       <mesh position={[0, ENTRANCE.h + 0.12, zf + 0.12]} material={darkSteelMat()} castShadow>
         <boxGeometry args={[ENTRANCE.w + 0.4, 0.26, 0.24]} />
       </mesh>
-      <group position={[ENTRANCE.w / 2 + 0.9, 0, zf + 0.8]} rotation-y={-0.25}>
-        <mesh position={[0, 0.65, 0]} rotation-x={-0.12} material={darkSteelMat()} castShadow>
-          <boxGeometry args={[0.7, 1.3, 0.04]} />
+      <group position={[ENTRANCE.w / 2 + 0.9, 0, zf + 0.9]} rotation-y={-0.25}>
+        <group rotation-x={-0.1}>
+          <mesh position={[0, 0.72, -0.01]} material={plankMat(1, 1)} castShadow>
+            <boxGeometry args={[0.82, 1.44, 0.04]} />
+          </mesh>
+          <PhotoCrop name="chalk" height={1.36} position={[0, 0.74, 0.015]} glow={0.25} />
+        </group>
+      </group>
+      <group position={[-ENTRANCE.w / 2 - 0.6, 0, zf + 0.45]}>
+        {[0, 1, 2, 3].map((i) => (
+          <mesh key={i} position={[0, 0.17 + i * 0.35, 0]} material={crateMat} castShadow>
+            <boxGeometry args={[0.5, 0.33, 0.38]} />
+          </mesh>
+        ))}
+        <mesh position={[0, 1.58, 0]} material={yellowBoxMat} castShadow>
+          <boxGeometry args={[0.52, 0.34, 0.4]} />
         </mesh>
-        <LightPanel id="pizarra" lines={['ORIFAEL', 'Ofertas del día']} style="street" size={[0.6, 0.5]} position={[0, 0.8, 0.04]} frame={false} glow={0.3} res={[400, 330]} />
+        <PhotoCrop name="crates" height={1.74} position={[0, 0.88, 0.2]} glow={0.25} />
+      </group>
+      <group position={[ENTRANCE.w / 2 + 1.75, 1.35, zf + 0.04]}>
+        <mesh material={whiteMat()}>
+          <boxGeometry args={[1.95, 1.8, 0.04]} />
+        </mesh>
+        <PhotoCrop name="posters" height={1.7} position={[0, 0, 0.025]} glow={0.35} />
       </group>
     </group>
   )
@@ -247,16 +305,6 @@ function BevPallets() {
   )
 }
 
-function OfferCard({ id, lines, bg, position, size = [0.82, 0.41], rot = 0 }: { id: string; lines: string[]; bg?: string; position: [number, number, number]; size?: [number, number]; rot?: number }) {
-  const t = useMemo(() => offerTex(id, lines, bg), [id, lines, bg])
-  return (
-    <mesh position={position} rotation-z={rot}>
-      <planeGeometry args={size} />
-      <meshStandardMaterial map={t} emissiveMap={t} emissive="#ffffff" emissiveIntensity={0.25} roughness={0.8} />
-    </mesh>
-  )
-}
-
 function ShelfProducts({ position, rotationY, width, levels, seed, bottles }: { position: [number, number, number]; rotationY: number; width: number; levels: number[]; seed: number; bottles: boolean }) {
   const ref = useRef<THREE.InstancedMesh>(null)
   const items = useMemo(() => {
@@ -319,18 +367,63 @@ function Shelving({ position, rotationY, width, white, seed, bottles }: { positi
 
 function Commercial() {
   const zw = 5.36
+  const candyA = useMemo(() => new THREE.MeshStandardMaterial({ color: '#e94b7a', roughness: 0.5 }), [])
+  const candyB = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f5b83d', roughness: 0.5 }), [])
+  const fridgeMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#c41820', metalness: 0.3, roughness: 0.4 }), [])
   return (
     <group>
       <mesh position={[-11.75, 1.6, 5.37]} material={plankMat(4, 2)}>
         <planeGeometry args={[6.3, 3.2]} />
       </mesh>
       <Shelving position={[-12.6, 0, 5.62]} rotationY={0} width={2.4} white={false} seed={11} bottles={false} />
-      <OfferCard id="nofia" lines={['HOY NO SE FÍA', '¡No insista!']} position={[-13.4, 2.55, zw + 0.02]} rot={0.02} />
-      <OfferCard id="picada" lines={['¡HAY PICADA!']} position={[-12.5, 2.6, zw + 0.02]} rot={-0.03} />
-      <OfferCard id="miga" lines={['HAY SÁNDWICH', 'DE MIGA']} position={[-11.6, 2.55, zw + 0.02]} rot={0.025} />
-      <OfferCard id="alias" lines={['¡PEDIR ALIAS!', 'Transferencias']} bg="#ff8a1c" position={[-10.65, 2.15, zw + 0.02]} size={[0.7, 0.5]} rot={-0.04} />
-      <OfferCard id="oferta" lines={['¡OFERTA!', 'Crema de leche', '$1.900']} position={[-9.9, 0.7, 7.0]} size={[0.5, 0.3]} />
-      <LightPanel id="cig" lines={['NUEVO', 'Ofertas · Promos']} style="screen" size={[1.1, 0.6]} position={[-10.6, 2.9, zw + 0.06]} glow={0.7} res={[512, 280]} />
+      <group position={[-10.6, 2.75, zw + 0.06]}>
+        <mesh material={darkSteelMat()}>
+          <boxGeometry args={[1.12, 0.82, 0.1]} />
+        </mesh>
+        <PhotoCrop name="lucky" width={1.02} position={[0, 0, 0.055]} glow={0.9} />
+      </group>
+      <PhotoCrop name="atencion" height={0.78} position={[-11.85, 0.55, 6.97]} glow={0.35} />
+      <PhotoCrop name="personal" height={0.5} position={[-10.85, 0.62, 6.97]} glow={0.35} />
+      <group position={[-10.2, 1.16, 6.86]}>
+        <mesh position-y={0.24} material={whiteMat()}>
+          <boxGeometry args={[0.26, 0.5, 0.02]} />
+        </mesh>
+        <PhotoCrop name="filmando" height={0.46} position={[0, 0.24, 0.012]} glow={0.4} />
+      </group>
+      <group position={[-13.0, 0, 6.75]}>
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <group key={i} position={[0, 0.25 + i * 0.22, -i * 0.04]}>
+            <mesh rotation-x={-0.35} material={glassMat()}>
+              <boxGeometry args={[0.55, 0.2, 0.32]} />
+            </mesh>
+            <mesh position-y={-0.04} material={i % 2 ? candyA : candyB}>
+              <boxGeometry args={[0.5, 0.07, 0.26]} />
+            </mesh>
+          </group>
+        ))}
+        <mesh position={[0, 0.7, -0.22]} material={darkSteelMat()}>
+          <boxGeometry args={[0.58, 1.4, 0.03]} />
+        </mesh>
+      </group>
+      <group position={[0, 0, 9.55]} rotation-y={Math.PI}>
+        {[7.55, 6.8].map((x) => (
+          <group key={x} position={[x, 0, 0]}>
+            <mesh position-y={1.0} material={fridgeMat} castShadow>
+              <boxGeometry args={[0.72, 2.0, 0.7]} />
+            </mesh>
+            <PhotoCrop name="fridge" height={1.75} position={[0, 1.0, 0.356]} glow={0.6} />
+          </group>
+        ))}
+        <group position={[5.45, 0, 0]}>
+          <mesh position-y={0.42} material={whiteMat()} castShadow>
+            <boxGeometry args={[1.3, 0.84, 0.7]} />
+          </mesh>
+          <PhotoCrop name="freezer" height={0.84} position={[0, 0.42, 0.356]} glow={0.35} />
+          <mesh position-y={0.87} material={glassMat()}>
+            <boxGeometry args={[1.26, 0.08, 0.66]} />
+          </mesh>
+        </group>
+      </group>
       <mesh position={[-11.4, 0.55, 6.6]} material={plankMat(2, 1)} castShadow receiveShadow>
         <boxGeometry args={[2.4, 1.1, 0.72]} />
       </mesh>
@@ -388,10 +481,11 @@ export function RealSite() {
       <Pickup />
       <BevPallets />
       <Commercial />
-      <PhotoMural photo="fachada" position={[-5.6, 2.25, HALF_D + WALL_T + 0.08]} />
-      <PhotoMural photo="mostrador" position={[-8.95, 1.75, 5.42]} height={2.0} />
-      <PhotoMural photo="galpon_interno" position={[-12.8, 2.6, -HALF_D + 0.06]} />
-      <PhotoMural photo="estanterias" position={[-HALF_W + 0.06, 2.3, 2.4]} rotationY={Math.PI / 2} />
+      <PhotoMural photo="actual_1" position={[-5.6, 2.25, HALF_D + WALL_T + 0.08]} />
+      <PhotoMural photo="actual_2" position={[-HALF_W + 0.06, 2.4, -2.7]} rotationY={Math.PI / 2} height={1.9} />
+      <PhotoMural photo="actual_3" position={[HALF_W - 0.06, 2.4, 2.4]} rotationY={-Math.PI / 2} />
+      <PhotoMural photo="actual_4" position={[-HALF_W + 0.06, 2.4, 1.3]} rotationY={Math.PI / 2} height={1.9} />
+      <PhotoMural photo="actual_5" position={[-12.6, 2.6, -HALF_D + 0.06]} height={1.9} />
     </group>
   )
 }

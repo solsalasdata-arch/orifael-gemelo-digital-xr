@@ -59,13 +59,14 @@ export const WAYPOINTS: Waypoint[] = [
 
 export const ORBIT_VIEW = { pos: [30, 24, 31] as V3, target: [0, 2.5, 0] as V3 }
 
-export type PhotoKey = 'fachada' | 'mostrador' | 'galpon_interno' | 'estanterias'
+export type PhotoKey = 'actual_1' | 'actual_2' | 'actual_3' | 'actual_4' | 'actual_5'
 
-export const PHOTOS: Record<PhotoKey, { file: string; short: string; caption: string }> = {
-  fachada: { file: 'fachada.jpg', short: 'Fachada · Gdor. Tello 437', caption: 'Fachada y acceso con portón metálico y cartel comercial' },
-  mostrador: { file: 'mostrador.jpg', short: 'Mostrador de atención', caption: 'Mostrador, revestimiento de madera, cielorraso con tragaluz y carteles de ofertas' },
-  galpon_interno: { file: 'galpon_interno.jpg', short: 'Galpón de carga', caption: 'Ladrillo visto, estructura de H°A° a la vista y piso de cemento alisado' },
-  estanterias: { file: 'estanterias.jpg', short: 'Atención y estanterías', caption: 'Mampara de atención y estanterías blancas con artículos de limpieza' },
+export const PHOTOS: Record<PhotoKey, { file: string; short: string; caption: string; hotspot: string }> = {
+  actual_1: { file: 'actual_1.jpg', short: 'Fachada · Gdor. Tello 437', caption: 'Fachada con cartel ORIFAEL, portón metálico, afiches de bebidas y pizarras de ofertas', hotspot: 'D' },
+  actual_2: { file: 'actual_2.jpg', short: 'Mostrador y atención', caption: 'Mostrador con mamparas, exhibidores y carteles "Atención: revise su mercadería" y "Lo estamos filmando"', hotspot: 'D' },
+  actual_3: { file: 'actual_3.jpg', short: 'Pasillo de atención', caption: 'Pasillo de cemento alisado con freezer de helados, heladeras exhibidoras y cielorraso de machimbre', hotspot: 'C' },
+  actual_4: { file: 'actual_4.jpg', short: 'Góndolas y vitrinas', caption: 'Góndolas con bebidas y artículos de limpieza, vitrinas y luminarias LED', hotspot: 'A' },
+  actual_5: { file: 'actual_5.jpg', short: 'Depósito de stock', caption: 'Racks metálicos naranjas con pallets de bebidas y packs en el depósito', hotspot: 'B' },
 }
 export const PHOTO_KEYS = Object.keys(PHOTOS) as PhotoKey[]
 
@@ -88,8 +89,8 @@ export type Hotspot = {
 
 export const HOTSPOTS: Hotspot[] = [
   {
-    photo: 'mostrador',
-    twin: 'Cielorraso con tragaluz relevado en el sector comercial; en el galpón, 7 cabriadas de acero de 20 m de luz.',
+    photo: 'actual_4',
+    twin: 'Cielorraso de machimbre con luminarias LED relevado en el salón; en el galpón, 7 cabriadas de acero de 20 m de luz.',
     id: 'A',
     label: 'Techo',
     zone: 'Cubierta',
@@ -100,8 +101,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [-6.5, 5.6, 4.5], look: [0, 7.15, -2.2] },
   },
   {
-    photo: 'estanterias',
-    twin: 'Estanterías blancas de limpieza modeladas en el sector comercial; racks de 3 niveles en los pasillos.',
+    photo: 'actual_5',
+    twin: 'Racks de 3 niveles con pallets de bebidas, como en el depósito real.',
     id: 'B',
     label: 'Pasillo 1',
     zone: 'Stock',
@@ -112,8 +113,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [-6, EYE, 4.6], look: [-6, 2.2, -0.5] },
   },
   {
-    photo: 'galpon_interno',
-    twin: 'Piso de cemento alisado, ladrillo visto y columnas/vigas de H°A° replicados del galpón real.',
+    photo: 'actual_3',
+    twin: 'Piso de cemento alisado, ladrillo visto y H°A° a la vista; freezer y heladeras del pasillo de atención.',
     id: 'C',
     label: 'Piso',
     zone: 'Solado',
@@ -124,8 +125,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [6.5, EYE, 9.2], look: [3.2, 0.3, 7.2] },
   },
   {
-    photo: 'fachada',
-    twin: 'Cartel real ORIFAEL, portón metálico y revoque de fachada sobre Gdor. Tello 437.',
+    photo: 'actual_1',
+    twin: 'Cartel real ORIFAEL, portón metálico, afiches de bebidas, pizarra de ofertas y cajones Quilmes en el acceso.',
     id: 'D',
     label: 'Entrada',
     zone: 'Acceso',
@@ -157,6 +158,8 @@ export const COLLIDERS: Box2[] = [
   box(12.0, 12.45, -8.75, -8.3, STAIRS.h),
   ...BEV_PALLETS.map(([x, z]) => box(x - 0.65, x + 0.65, z - 0.55, z + 0.55, 1.7)),
   box(-14.9, -8.6, 5.05, 5.45, 3.2),
+  box(-8.0, -4.6, 9.1, 9.95, 2.1),
+  box(-13.35, -12.65, 6.4, 7.1, 1.6),
   box(-1.4, 1.4, -23.5, -10.45, 4.2),
   box(2.9, 5.1, -8.4, -6.4, 2.4),
   box(10.2, 13.8, 6.4, 8.2, 1.0),

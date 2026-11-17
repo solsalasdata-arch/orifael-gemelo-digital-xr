@@ -101,7 +101,7 @@ function PhotoCompare({ h }: { h: Hotspot }) {
         <span className="absolute top-1.5 left-1.5 rounded bg-bordo/90 px-1.5 py-0.5 text-[10px] font-bold text-mint">FOTO REAL</span>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pt-5 pb-1.5 text-[11px] leading-snug text-white">{p.caption}</div>
       </div>
-      <div className="mt-1.5 grid grid-cols-4 gap-1">
+      <div className="mt-1.5 grid grid-cols-5 gap-1">
         {PHOTO_KEYS.map((k) => (
           <button key={k} onClick={() => setSel(k)} className={`overflow-hidden rounded-md ring-2 transition ${k === sel ? 'ring-mint' : 'ring-transparent opacity-60 hover:opacity-100'}`}>
             <img src={url(k)} alt={PHOTOS[k].short} className="h-10 w-full object-cover" draggable={false} />

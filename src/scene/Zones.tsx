@@ -115,20 +115,6 @@ function Reception() {
       <mesh position={[-11.75, 1.6, 5.25]} material={darkSteelMat()} castShadow receiveShadow>
         <boxGeometry args={[6.3, 3.2, 0.2]} />
       </mesh>
-      {/* bench + plant */}
-      <mesh position={[-6.6, 0.25, 9.2]} material={darkSteelMat()} castShadow>
-        <boxGeometry args={[1.8, 0.45, 0.5]} />
-      </mesh>
-      <group position={[-5.4, 0, 9.3]}>
-        <mesh position-y={0.25} material={bordoMat()} castShadow>
-          <cylinderGeometry args={[0.25, 0.2, 0.5, 16]} />
-        </mesh>
-        <mesh position-y={0.85} castShadow>
-          <icosahedronGeometry args={[0.45, 1]} />
-          <meshStandardMaterial color="#3e7d4f" roughness={0.8} flatShading />
-        </mesh>
-      </group>
-      {/* digital twin totem */}
       <group position={[-3.8, 0, 8.4]} rotation-y={0.5}>
         <mesh position-y={0.9} material={darkSteelMat()} castShadow>
           <boxGeometry args={[0.7, 1.8, 0.12]} />
