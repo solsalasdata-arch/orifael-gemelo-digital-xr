@@ -33,7 +33,7 @@ export const DOCK_H = 4.2
 export const OPEN_DOCK = 0
 
 export const SUN_DIR: V3 = (() => {
-  const v = [0.42, 1, 0.28]
+  const v = [-0.62, 0.72, 0.34]
   const l = Math.hypot(v[0], v[1], v[2])
   return [v[0] / l, v[1] / l, v[2] / l] as V3
 })()

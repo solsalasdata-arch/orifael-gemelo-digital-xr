@@ -14,8 +14,8 @@ function Dim({ a, b, label, offset = [0, 0, 0] }: { a: V; b: V; label: string; o
       <Line points={[pa, pb]} color={BIM_COLOR} lineWidth={2} transparent opacity={0.95} />
       <Line points={[a, pa]} color={BIM_COLOR} lineWidth={1} dashed dashSize={0.2} gapSize={0.15} />
       <Line points={[b, pb]} color={BIM_COLOR} lineWidth={1} dashed dashSize={0.2} gapSize={0.15} />
-      <Html center position={mid} zIndexRange={[15, 5]} style={{ pointerEvents: 'none' }}>
-        <div className="whitespace-nowrap rounded-md border border-bim/60 bg-black/70 px-2 py-0.5 font-mono text-[11px] font-semibold text-bim">{label}</div>
+      <Html center position={mid} zIndexRange={[8, 0]} style={{ pointerEvents: 'none' }}>
+        <div className="whitespace-nowrap rounded-[2px] border border-bim/60 bg-black/70 px-2 py-0.5 font-mono text-[11px] font-semibold text-bim">{label}</div>
       </Html>
     </group>
   )
@@ -36,7 +36,7 @@ export function Dimensions() {
           <Dim a={[0, BOTTOM_CHORD, -HALF_D]} b={[0, BOTTOM_CHORD, HALF_D]} offset={[0, -0.6, 0]} label="Cabriada reticulada · L = 20 m" />
           {TRUSS_X.map((x, i) => (
             <Html key={x} center position={[Math.max(-HALF_W + 0.2, Math.min(HALF_W - 0.2, x)), 0.05, HALF_D + 1.2]} style={{ pointerEvents: 'none' }}>
-              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-bim bg-black/70 font-mono text-[11px] font-bold text-bim">{i + 1}</div>
+              <div className="flex h-6 w-6 items-center justify-center rounded-[3px] border border-bim bg-black/70 font-mono text-[11px] font-bold text-bim">{i + 1}</div>
             </Html>
           ))}
         </>

@@ -18,7 +18,7 @@ export default function App() {
         camera={{ fov: 70, near: 0.05, far: 900, position: [0, 1.7, 30] }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = 1.05
+          gl.toneMappingExposure = 1.0
         }}
       >
         <XR store={xrStore}>

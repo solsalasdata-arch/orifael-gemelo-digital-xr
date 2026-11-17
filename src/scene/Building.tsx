@@ -11,7 +11,7 @@ import {
   roofMat, rubberMat, shutterMat, skylightMat, steelMat, wallMat,
 } from '../materials'
 import { useStore } from '../store'
-import { concreteTex, repeated } from '../textures'
+import { concreteTex, repeated, concreteNormalTex } from '../textures'
 import { InstancedBoxes, beam } from './Instanced'
 
 const WALL_TOP = EAVE + 0.25
@@ -41,27 +41,30 @@ function Floor() {
   const reflections = useStore((s) => s.reflections)
   const inXR = useStore((s) => s.inXR)
   const map = useMemo(() => repeated(concreteTex(), W / 5, D / 5), [])
+  const nrm = useMemo(() => repeated(concreteNormalTex(), W / 5, D / 5), [])
   return (
     <mesh rotation-x={-Math.PI / 2} receiveShadow>
       <planeGeometry args={[W, D]} />
       {reflections && !inXR ? (
         <MeshReflectorMaterial
           map={map}
+          normalMap={nrm}
+          normalScale={[0.8, 0.8]}
           color="#c8c6c1"
           blur={[500, 160]}
           resolution={1024}
           mixBlur={1}
-          mixStrength={1.3}
+          mixStrength={2.2}
           mixContrast={1}
-          roughness={0.78}
+          roughness={0.55}
           metalness={0.05}
           depthScale={1.1}
           minDepthThreshold={0.4}
           maxDepthThreshold={1.3}
-          mirror={0.35}
+          mirror={0.55}
         />
       ) : (
-        <meshStandardMaterial map={map} color="#c8c6c1" roughness={0.7} metalness={0.05} />
+        <meshStandardMaterial map={map} normalMap={nrm} color="#c8c6c1" roughness={0.45} metalness={0.05} />
       )}
     </mesh>
   )

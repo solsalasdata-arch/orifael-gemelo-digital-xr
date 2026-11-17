@@ -1,6 +1,6 @@
-import { Environment, Lightformer, Sky } from '@react-three/drei'
+import { Environment, Lightformer } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 import { BAY_CENTERS, BOTTOM_CHORD, SUN_DIR } from '../data'
 import { useStore } from '../store'
@@ -18,11 +18,11 @@ function Lights() {
   const bim = useStore((s) => s.bim)
   return (
     <>
-      <hemisphereLight args={['#e4eefa', '#6f6355', bim ? 0.9 : 0.75]} />
+      <hemisphereLight args={['#dfe4ea', '#5d564e', bim ? 0.9 : 0.5]} />
       <directionalLight
         position={SUN_POS}
-        intensity={3.2}
-        color="#fff3e0"
+        intensity={3.8}
+        color="#ffd3a1"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-24}
@@ -31,16 +31,45 @@ function Lights() {
         shadow-camera-bottom={-24}
         shadow-camera-near={10}
         shadow-camera-far={120}
+        shadow-radius={6}
+        shadow-blurSamples={16}
         shadow-bias={-0.0004}
         shadow-normalBias={0.04}
       />
       {[BAY_CENTERS[1], BAY_CENTERS[4]].flatMap((x) =>
         [-6.5, 0, 6.5].map((z) => (
-          <pointLight key={`${x}${z}`} position={[x, BOTTOM_CHORD - 0.7, z]} intensity={38} distance={20} decay={1.6} color="#fff1dc" />
+          <pointLight key={`${x}${z}`} position={[x, BOTTOM_CHORD - 0.7, z]} intensity={30} distance={20} decay={1.6} color="#f4f1ea" />
         )),
       )}
       <pointLight position={[-10.5, 3.2, 7.6]} intensity={10} distance={9} decay={1.6} color="#ffe2c2" />
     </>
+  )
+}
+
+function SkyDome() {
+  const tex = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = 4
+    c.height = 512
+    const ctx = c.getContext('2d')!
+    const g = ctx.createLinearGradient(0, 0, 0, 512)
+    g.addColorStop(0, '#7f8b97')
+    g.addColorStop(0.32, '#a9b1b9')
+    g.addColorStop(0.47, '#d3cdc4')
+    g.addColorStop(0.5, '#ddcdb8')
+    g.addColorStop(0.53, '#b9b6b1')
+    g.addColorStop(1, '#8e8b86')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, 4, 512)
+    const t = new THREE.CanvasTexture(c)
+    t.colorSpace = THREE.SRGBColorSpace
+    return t
+  }, [])
+  return (
+    <mesh scale={600} renderOrder={-1}>
+      <sphereGeometry args={[1, 32, 24]} />
+      <meshBasicMaterial map={tex} side={THREE.BackSide} fog={false} depthWrite={false} toneMapped={false} />
+    </mesh>
   )
 }
 
@@ -57,14 +86,14 @@ export function Experience() {
   return (
     <>
       <CameraInit />
-      <color attach="background" args={['#a9c4dc']} />
-      <fog attach="fog" args={['#c9d6e2', 90, 260]} />
-      <Sky distance={4500} sunPosition={SUN_POS} turbidity={5} rayleigh={1.1} mieCoefficient={0.004} mieDirectionalG={0.85} />
-      <Environment resolution={256} frames={1} environmentIntensity={0.55}>
+      <color attach="background" args={['#bfc2c5']} />
+      <fog attach="fog" args={['#c3c4c4', 70, 280]} />
+      <SkyDome />
+      <Environment resolution={256} frames={1} environmentIntensity={0.7}>
         <Lightformer form="rect" intensity={3} position={[0, 8, 0]} rotation-x={Math.PI / 2} scale={[30, 6, 1]} />
         <Lightformer form="rect" intensity={1.5} position={[0, 3, 12]} scale={[20, 3, 1]} />
-        <Lightformer form="rect" intensity={1.2} color="#A8E6CF" position={[-14, 4, 0]} rotation-y={Math.PI / 2} scale={[20, 2, 1]} />
-        <Lightformer form="rect" intensity={1.2} color="#ffd9b0" position={[14, 4, 0]} rotation-y={-Math.PI / 2} scale={[20, 2, 1]} />
+        <Lightformer form="rect" intensity={1.0} color="#e6ebf0" position={[-14, 4, 0]} rotation-y={Math.PI / 2} scale={[20, 2, 1]} />
+        <Lightformer form="rect" intensity={1.4} color="#ffd2a0" position={[14, 4, 0]} rotation-y={-Math.PI / 2} scale={[20, 2, 1]} />
       </Environment>
       <Lights />
       <Building />

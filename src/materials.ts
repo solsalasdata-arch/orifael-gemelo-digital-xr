@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { brickTex, corrugatedTex, concreteTex, hazardTex, plankTex, repeated, woodTex, boxTex } from './textures'
+import { brickNormalTex, brickTex, corrugatedTex, concreteTex, hazardTex, plankTex, repeated, woodTex, boxTex } from './textures'
 
 const memo = new Map<string, THREE.Material>()
 function once<T extends THREE.Material>(key: string, f: () => T): T {
@@ -16,13 +16,15 @@ export const BIM_COLOR = '#38f3ff'
 export const wallMat = (len: number, h: number) =>
   once(`wall-${len.toFixed(2)}-${h.toFixed(2)}`, () => {
     const t = repeated(brickTex(), len, h)
-    return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 1.5, roughness: 0.92 })
+    const n = repeated(brickNormalTex(), len, h)
+    return new THREE.MeshStandardMaterial({ map: t, normalMap: n, normalScale: new THREE.Vector2(1.1, 1.1), roughness: 0.9 })
   })
 
 export const gableMat = () =>
   once('gable', () => {
     const t = repeated(brickTex(), 1, 1)
-    return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 1.5, roughness: 0.92 })
+    const n = repeated(brickNormalTex(), 1, 1)
+    return new THREE.MeshStandardMaterial({ map: t, normalMap: n, normalScale: new THREE.Vector2(1.1, 1.1), roughness: 0.9 })
   })
 
 export const shutterMat = (w: number, h: number) =>
@@ -46,7 +48,7 @@ export const skylightMat = () =>
     new THREE.MeshStandardMaterial({ color: '#e8f6ff', emissive: '#cfeeff', emissiveIntensity: 1.1, transparent: true, opacity: 0.5, roughness: 0.2, side: THREE.DoubleSide, depthWrite: false }),
   )
 
-export const steelMat = () => once('steel', () => new THREE.MeshStandardMaterial({ color: '#9aa3ab', metalness: 0.85, roughness: 0.35 }))
+export const steelMat = () => once('steel', () => new THREE.MeshStandardMaterial({ color: '#8e979f', metalness: 0.9, roughness: 0.3 }))
 export const columnMat = () => once('column', () => new THREE.MeshStandardMaterial({ color: '#c9c6c0', map: repeated(concreteTex(), 0.4, 2), roughness: 0.88 }))
 export const concreteBeamMat = () => once('cbeam', () => new THREE.MeshStandardMaterial({ color: '#c4c1bb', map: repeated(concreteTex(), 6, 0.3), roughness: 0.9 }))
 export const plankMat = (rx = 1, ry = 1) =>
@@ -63,8 +65,8 @@ export const whiteMat = () => once('white', () => new THREE.MeshStandardMaterial
 export const glassMat = () =>
   once('glass', () => new THREE.MeshPhysicalMaterial({ color: '#cfe9f5', transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0.1, depthWrite: false }))
 
-export const rackUprightMat = () => once('rackU', () => new THREE.MeshStandardMaterial({ color: '#8f989f', metalness: 0.6, roughness: 0.4 }))
-export const rackBeamMat = () => once('rackB', () => new THREE.MeshStandardMaterial({ color: '#e0481b', metalness: 0.4, roughness: 0.4 }))
+export const rackUprightMat = () => once('rackU', () => new THREE.MeshStandardMaterial({ color: '#5b6c7b', metalness: 0.8, roughness: 0.32 }))
+export const rackBeamMat = () => once('rackB', () => new THREE.MeshStandardMaterial({ color: '#d9531e', metalness: 0.55, roughness: 0.34 }))
 export const yellowMat = () => once('yellow', () => new THREE.MeshStandardMaterial({ color: '#f2c230', roughness: 0.5 }))
 export const palletMat = () => once('pallet', () => new THREE.MeshStandardMaterial({ map: woodTex(), roughness: 0.85 }))
 export const boxMat = (v: 0 | 1) => once(`box-${v}`, () => new THREE.MeshStandardMaterial({ map: boxTex(v), roughness: 0.85 }))

@@ -23,11 +23,12 @@ body {
 }
 
 .glass {
-  background: linear-gradient(160deg, rgba(20, 26, 34, 0.78), rgba(12, 16, 22, 0.66));
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border: 1px solid rgba(168, 230, 207, 0.16);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, rgba(16, 19, 23, 0.9), rgba(11, 13, 16, 0.86));
+  backdrop-filter: blur(10px) saturate(115%);
+  -webkit-backdrop-filter: blur(10px) saturate(115%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(168, 230, 207, 0.28);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
 }
 
 .scroll-thin::-webkit-scrollbar { width: 6px; }

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { BAY_CENTERS, BOTTOM_CHORD, HALF_D, HALF_W, RACK_ROWS, RACK_Z0, RACK_Z1 } from '../data'
 import { bordoMat, darkSteelMat, lampMat, mintGlowMat, rubberMat, whiteMat, yellowMat } from '../materials'
-import { asphaltTex, repeated, sidewalkTex, signTex, type SignStyle } from '../textures'
+import { asphaltTex, concreteTex, repeated, sidewalkTex, signTex, type SignStyle } from '../textures'
 import { InstancedBoxes, boxAt } from './Instanced'
 
 type PanelProps = {
@@ -261,24 +261,50 @@ function FloorMarkings() {
   )
 }
 
-function Mountains() {
-  const peaks = useMemo(() => {
-    const p: { x: number; z: number; r: number; h: number; c: string }[] = []
-    const cols = ['#7a5b45', '#8a6a4f', '#6d5a4a', '#5f6b4a', '#93705a']
-    for (let i = 0; i < 26; i++) {
-      const a = (i / 26) * Math.PI * 2
-      const d = 150 + ((i * 37) % 60)
-      p.push({ x: Math.cos(a) * d, z: Math.sin(a) * d, r: 30 + ((i * 13) % 25), h: 28 + ((i * 17) % 34), c: cols[i % cols.length] })
+const PLASTER = ['#c2c1be', '#b2b1ae', '#cbc8c2', '#a8a9a8', '#bdb8b0']
+
+function UrbanContext() {
+  const groups = useMemo(() => {
+    const g: THREE.Matrix4[][] = PLASTER.map(() => [])
+    let seed = 11
+    const r = () => {
+      seed = (seed * 16807) % 2147483647
+      return (seed - 1) / 2147483646
     }
-    return p
+    const put = (x: number, z: number, w: number, d: number, hgt: number) => g[Math.floor(r() * PLASTER.length)].push(boxAt(x, hgt / 2, z, w, hgt, d))
+    for (let x = -62; x < 62; ) {
+      const w = 6 + r() * 7
+      put(x + w / 2, 30.5 + r() * 1.5, w - 0.15, 12, 3.2 + r() * 3.2)
+      x += w
+    }
+    ;[-1, 1].forEach((sd) => {
+      for (let z = -22; z < 9; ) {
+        const d = 7 + r() * 6
+        const w = 10 + r() * 8
+        put(sd * (HALF_W + 1.2 + w / 2), z + d / 2, w, d - 0.2, 3.2 + r() * 2.6)
+        z += d
+      }
+    })
+    for (let x = -46; x < 46; ) {
+      const w = 7 + r() * 8
+      put(x + w / 2, -HALF_D - 21 - r() * 3, w - 0.2, 12, 3.5 + r() * 4)
+      x += w
+    }
+    for (let i = 0; i < 90; i++) {
+      const a = (i / 90) * Math.PI * 2
+      const d = 85 + r() * 70
+      const x = Math.cos(a) * d
+      const z = Math.sin(a) * d
+      if (Math.abs(z - 17.3) < 8) continue
+      put(x, z, 10 + r() * 16, 10 + r() * 14, 4 + r() * 8)
+    }
+    return g
   }, [])
+  const mats = useMemo(() => PLASTER.map((c) => new THREE.MeshStandardMaterial({ color: c, map: repeated(concreteTex(), 2, 1), roughness: 0.95 })), [])
   return (
     <group>
-      {peaks.map((p, i) => (
-        <mesh key={i} position={[p.x, p.h / 2 - 2, p.z]} rotation-y={i}>
-          <coneGeometry args={[p.r, p.h, 6]} />
-          <meshStandardMaterial color={p.c} roughness={1} flatShading />
-        </mesh>
+      {groups.map((m, i) => (
+        <InstancedBoxes key={i} matrices={m} material={mats[i]} castShadow={false} />
       ))}
     </group>
   )
@@ -297,7 +323,7 @@ function Exterior() {
     <group>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.03} receiveShadow>
         <planeGeometry args={[400, 400]} />
-        <meshStandardMaterial color="#a89a80" roughness={0.97} />
+        <meshStandardMaterial color="#8f8c86" roughness={0.97} />
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.005, 17.3]} receiveShadow>
         <planeGeometry args={[120, 8.2]} />
@@ -327,13 +353,15 @@ function Exterior() {
             <cylinderGeometry args={[0.12, 0.16, 2.4, 8]} />
             <meshStandardMaterial color="#5a4330" roughness={1} />
           </mesh>
-          <mesh position-y={3.1} castShadow>
-            <icosahedronGeometry args={[1.4, 1]} />
-            <meshStandardMaterial color={i % 2 ? '#4f8a4a' : '#3f7a45'} roughness={0.9} flatShading />
-          </mesh>
+          {[[0, 3.2, 0, 1.25], [0.7, 2.8, 0.3, 0.9], [-0.6, 2.9, -0.4, 0.95], [0.1, 3.8, -0.2, 0.8]].map(([x, y, z, r], j) => (
+            <mesh key={j} position={[x, y, z]} castShadow>
+              <icosahedronGeometry args={[r, 3]} />
+              <meshStandardMaterial color={(i + j) % 2 ? '#56634b' : '#4a5741'} roughness={1} />
+            </mesh>
+          ))}
         </group>
       ))}
-      <Mountains />
+      <UrbanContext />
     </group>
   )
 }

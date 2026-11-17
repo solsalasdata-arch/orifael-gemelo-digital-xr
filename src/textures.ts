@@ -74,9 +74,12 @@ export const concreteTex = () =>
       ctx.stroke()
     }
     noise(ctx, w, h, 22, 11)
-    ctx.fillStyle = 'rgba(40,42,46,0.85)'
-    ctx.fillRect(0, 0, w, 3)
-    ctx.fillRect(0, 0, 3, h)
+    ctx.fillStyle = 'rgba(34,36,40,0.9)'
+    ctx.fillRect(0, 0, w, 5)
+    ctx.fillRect(0, 0, 5, h)
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'
+    ctx.fillRect(0, 5, w, 2)
+    ctx.fillRect(5, 0, 2, h)
   })
 
 export const asphaltTex = () =>
@@ -148,42 +151,69 @@ export const woodTex = () =>
     noise(ctx, w, h, 14, 2)
   })
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.arcTo(x + w, y, x + w, y + h, r)
-  ctx.arcTo(x + w, y + h, x, y + h, r)
-  ctx.arcTo(x, y + h, x, y, r)
-  ctx.arcTo(x, y, x + w, y, r)
-  ctx.closePath()
-}
-
 export const boxTex = (variant: 0 | 1) =>
   make(`box-${variant}`, 512, 512, (ctx, w, h) => {
-    ctx.fillStyle = variant === 0 ? '#c79d6c' : '#e9e6df'
+    ctx.fillStyle = variant === 0 ? '#b08657' : '#bf9866'
     ctx.fillRect(0, 0, w, h)
-    noise(ctx, w, h, variant === 0 ? 26 : 10, 31 + variant)
-    ctx.fillStyle = variant === 0 ? 'rgba(235,215,170,0.55)' : 'rgba(168,230,207,0.55)'
-    ctx.fillRect(w * 0.44, 0, w * 0.12, h)
-    ctx.strokeStyle = variant === 0 ? '#5C1A33' : '#2f6f5a'
-    ctx.lineWidth = 10
-    roundRect(ctx, 70, 150, 372, 190, 18)
-    ctx.stroke()
-    ctx.fillStyle = variant === 0 ? '#5C1A33' : '#2b5f4e'
-    ctx.font = 'bold 82px Arial, Helvetica, sans-serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText('ORIFAEL', w / 2, 222)
-    ctx.font = 'bold 28px Arial, Helvetica, sans-serif'
-    ctx.fillText('DISTRIBUIDORA · JUJUY', w / 2, 296)
-    ctx.font = 'bold 44px Arial, Helvetica, sans-serif'
-    ctx.fillText(variant === 0 ? '↑ ↑' : 'FRÁGIL', w / 2, 70)
-    ctx.font = '26px "Courier New", monospace'
-    ctx.fillStyle = '#222'
-    ctx.fillText(variant === 0 ? 'SKU 437-0' + Math.floor(rng(variant + 3)() * 900 + 100) : 'LOTE JUJ-2026', w / 2, 420)
-    for (let i = 0; i < 26; i++) {
-      ctx.fillRect(150 + i * 8, 445, i % 3 === 0 ? 4 : 2, 40)
+    noise(ctx, w, h, 16, 31 + variant)
+    const r = rng(77 + variant)
+    for (let i = 0; i < 160; i++) {
+      ctx.strokeStyle = `rgba(90,60,30,${0.03 + r() * 0.05})`
+      ctx.lineWidth = 1
+      const y = r() * h
+      ctx.beginPath()
+      ctx.moveTo(0, y)
+      ctx.lineTo(w, y + (r() - 0.5) * 6)
+      ctx.stroke()
     }
+    const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.75)
+    vg.addColorStop(0, 'rgba(0,0,0,0)')
+    vg.addColorStop(1, 'rgba(50,30,10,0.35)')
+    ctx.fillStyle = vg
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = 'rgba(214,186,138,0.75)'
+    ctx.fillRect(0, h * 0.44, w, h * 0.11)
+    ctx.fillStyle = 'rgba(255,245,220,0.18)'
+    ctx.fillRect(0, h * 0.455, w, h * 0.02)
+    ctx.fillStyle = 'rgba(48,32,22,0.82)'
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'alphabetic'
+    ctx.font = 'bold 46px Arial, Helvetica, sans-serif'
+    ctx.fillText('ORIFAEL', 34, 92)
+    ctx.font = '19px Arial, Helvetica, sans-serif'
+    ctx.fillText('DISTRIBUIDORA · S. S. DE JUJUY', 36, 120)
+    ctx.strokeStyle = 'rgba(48,32,22,0.8)'
+    ctx.lineWidth = 4
+    ;[0, 1].forEach((k) => {
+      const x = 380 + k * 52
+      ctx.beginPath()
+      ctx.moveTo(x, 110)
+      ctx.lineTo(x, 50)
+      ctx.moveTo(x - 14, 66)
+      ctx.lineTo(x, 50)
+      ctx.lineTo(x + 14, 66)
+      ctx.stroke()
+    })
+    ctx.strokeRect(370, 40, 104, 82)
+    ctx.fillStyle = '#f4f2ec'
+    ctx.fillRect(280, 330, 196, 140)
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'
+    ctx.lineWidth = 2
+    ctx.strokeRect(280, 330, 196, 140)
+    ctx.fillStyle = '#1d1d1d'
+    ctx.font = '15px "Courier New", monospace'
+    ctx.fillText(`SKU 437-${variant ? '2318' : '0915'}`, 292, 352)
+    ctx.fillText(`LOTE JUJ-26-${variant ? '11' : '07'}`, 292, 372)
+    ctx.fillText(variant ? '12 x 1,5 L' : '6 x 2,25 L', 292, 392)
+    for (let i = 0; i < 44; i++) {
+      const bw = r() > 0.6 ? 3 : 1.5
+      ctx.fillRect(292 + i * 4, 402, bw, 46)
+    }
+    ctx.font = '11px "Courier New", monospace'
+    ctx.fillText('7 790895 00' + (variant ? '2318' : '0915'), 300, 462)
+    ctx.fillStyle = 'rgba(48,32,22,0.7)'
+    ctx.font = 'bold 22px Arial, Helvetica, sans-serif'
+    ctx.fillText(variant ? 'FRÁGIL' : 'ESTE LADO ARRIBA', 34, 440)
   })
 
 export const hazardTex = () =>
@@ -484,3 +514,74 @@ export const bevPackTex = (v: number) =>
     ctx.fillStyle = g
     ctx.fillRect(0, 0, w, h)
   })
+
+function heightToNormal(ctx: CanvasRenderingContext2D, w: number, h: number, strength: number) {
+  const src = ctx.getImageData(0, 0, w, h).data
+  const out = ctx.createImageData(w, h)
+  const H = (x: number, y: number) => src[(((y + h) % h) * w + ((x + w) % w)) * 4] / 255
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const dx = (H(x + 1, y) - H(x - 1, y)) * strength
+      const dy = (H(x, y + 1) - H(x, y - 1)) * strength
+      const l = Math.hypot(dx, dy, 1)
+      const i = (y * w + x) * 4
+      out.data[i] = (-dx / l) * 127.5 + 127.5
+      out.data[i + 1] = (dy / l) * 127.5 + 127.5
+      out.data[i + 2] = (1 / l) * 127.5 + 127.5
+      out.data[i + 3] = 255
+    }
+  ctx.putImageData(out, 0, 0)
+}
+
+export const brickNormalTex = () =>
+  make(
+    'brick-n',
+    1024,
+    1024,
+    (ctx, w, h) => {
+      ctx.fillStyle = '#3a3a3a'
+      ctx.fillRect(0, 0, w, h)
+      const rows = 5
+      const cols = 3
+      const rh = h / rows
+      const cw = w / cols
+      const m = 14
+      const r = rng(91)
+      for (let y = 0; y < rows; y++) {
+        const off = y % 2 ? cw / 2 : 0
+        for (let x = -1; x <= cols; x++) {
+          const bx = x * cw + off + m / 2
+          const by = y * rh + m / 2
+          ctx.fillStyle = '#9a9a9a'
+          ctx.fillRect(bx - 3, by - 3, cw - m + 6, rh - m + 6)
+          ctx.fillStyle = '#d4d4d4'
+          ctx.fillRect(bx + 3, by + 3, cw - m - 6, rh - m - 6)
+          for (let k = 0; k < 60; k++) {
+            const v = 150 + Math.floor(r() * 90)
+            ctx.fillStyle = `rgb(${v},${v},${v})`
+            ctx.fillRect(bx + r() * (cw - m), by + r() * (rh - m), 3 + r() * 14, 2 + r() * 6)
+          }
+        }
+      }
+      noise(ctx, w, h, 18, 13)
+      heightToNormal(ctx, w, h, 4)
+    },
+    false,
+  )
+
+export const concreteNormalTex = () =>
+  make(
+    'concrete-n',
+    512,
+    512,
+    (ctx, w, h) => {
+      ctx.fillStyle = '#808080'
+      ctx.fillRect(0, 0, w, h)
+      noise(ctx, w, h, 10, 17)
+      ctx.fillStyle = '#202020'
+      ctx.fillRect(0, 0, w, 3)
+      ctx.fillRect(0, 0, 3, h)
+      heightToNormal(ctx, w, h, 3)
+    },
+    false,
+  )

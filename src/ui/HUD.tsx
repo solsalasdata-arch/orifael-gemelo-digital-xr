@@ -9,7 +9,7 @@ function Section({ title, children, right }: { title: string; children: ReactNod
   return (
     <section className="border-t border-white/8 px-4 py-3">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-mint/80">{title}</h3>
+        <h3 className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-mint/75">{title}</h3>
         {right}
       </div>
       {children}
@@ -22,7 +22,7 @@ function Toggle({ on, onClick, label, hint, accent = 'mint' }: { on: boolean; on
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left transition ${on ? (accent === 'bim' ? 'border-bim/60 bg-bim/10' : 'border-mint/50 bg-mint/10') : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.07]'}`}
+      className={`flex w-full items-center justify-between rounded-[4px] border px-3 py-2 text-left transition ${on ? (accent === 'bim' ? 'border-bim/60 bg-bim/10' : 'border-mint/50 bg-mint/10') : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.07]'}`}
     >
       <span>
         <span className="block text-[13px] font-semibold text-white">{label}</span>
@@ -46,15 +46,15 @@ function Stats() {
   const fpsColor = s.fps >= 50 ? 'text-mint' : s.fps >= 30 ? 'text-amber-300' : 'text-rose-400'
   return (
     <div className="grid grid-cols-3 gap-2 font-mono">
-      <div className="rounded-lg bg-black/30 px-2 py-1.5">
+      <div className="rounded-[3px] bg-black/30 px-2 py-1.5">
         <div className="text-[10px] text-slate-400">FPS</div>
         <div className={`text-lg font-bold ${fpsColor}`}>{s.fps}</div>
       </div>
-      <div className="rounded-lg bg-black/30 px-2 py-1.5">
+      <div className="rounded-[3px] bg-black/30 px-2 py-1.5">
         <div className="text-[10px] text-slate-400">Polígonos</div>
         <div className="text-lg font-bold text-white">{fmt(s.tris)}</div>
       </div>
-      <div className="rounded-lg bg-black/30 px-2 py-1.5">
+      <div className="rounded-[3px] bg-black/30 px-2 py-1.5">
         <div className="text-[10px] text-slate-400">Draw calls</div>
         <div className="text-lg font-bold text-white">{s.calls}</div>
       </div>
@@ -90,7 +90,7 @@ function PhotoGallery() {
           <div className="grid grid-cols-5 gap-1">
             {PHOTO_KEYS.map((pk, i) =>
               PHOTOS[pk].zone !== z ? null : (
-                <button key={pk} title={PHOTOS[pk].caption} onClick={() => setIdx(i)} className="group overflow-hidden rounded-md ring-1 ring-white/10 hover:ring-mint">
+                <button key={pk} title={PHOTOS[pk].caption} onClick={() => setIdx(i)} className="group overflow-hidden rounded-[2px] ring-1 ring-white/10 hover:ring-mint">
                   <img src={thumbSrc(pk)} alt={PHOTOS[pk].short} loading="lazy" className="h-10 w-full object-cover transition group-hover:scale-105" draggable={false} />
                 </button>
               ),
@@ -104,7 +104,7 @@ function PhotoGallery() {
         createPortal(
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4" onClick={() => setIdx(null)}>
             <div className="relative max-h-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-              <img src={photoSrc(k)} alt={PHOTOS[k].caption} className="max-h-[80vh] w-auto rounded-xl ring-1 ring-white/20" draggable={false} />
+              <img src={photoSrc(k)} alt={PHOTOS[k].caption} className="max-h-[80vh] w-auto rounded-[4px] ring-1 ring-white/20" draggable={false} />
               <div className="mt-2 flex items-center justify-between gap-3 text-sm text-white">
                 <div>
                   <span className="mr-2 rounded bg-bordo px-1.5 py-0.5 text-[11px] font-bold text-mint">{ZONES[PHOTOS[k].zone]}</span>
@@ -114,9 +114,9 @@ function PhotoGallery() {
                   {idx + 1} / {n}
                 </span>
               </div>
-              <button onClick={() => setIdx((idx + n - 1) % n)} className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">‹</button>
-              <button onClick={() => setIdx((idx + 1) % n)} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">›</button>
-              <button onClick={() => setIdx(null)} className="absolute top-2 right-2 rounded-full bg-black/60 px-2.5 py-1 text-white hover:bg-black/80">✕</button>
+              <button onClick={() => setIdx((idx + n - 1) % n)} className="absolute top-1/2 left-2 -translate-y-1/2 rounded-[3px] bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">‹</button>
+              <button onClick={() => setIdx((idx + 1) % n)} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-[3px] bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">›</button>
+              <button onClick={() => setIdx(null)} className="absolute top-2 right-2 rounded-[3px] bg-black/60 px-2.5 py-1 text-white hover:bg-black/80">✕</button>
             </div>
           </div>,
           document.body,
@@ -135,11 +135,11 @@ function Panel() {
   const st = useStore.getState
   const target = flight ? flight.toMode : mode
   return (
-    <div className="glass scroll-thin pointer-events-auto block max-h-full w-[340px] max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-2xl">
+    <div className="glass scroll-thin pointer-events-auto block max-h-full w-[340px] max-w-[calc(100vw-1.5rem)] overflow-y-auto rounded-[4px]">
       <header className="relative overflow-hidden px-4 pt-4 pb-3">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-bordo via-mint to-bordo" />
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bordo shadow-lg shadow-bordo/40 ring-1 ring-mint/30">
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[4px] bg-bordo shadow-lg shadow-bordo/40 ring-1 ring-mint/30">
             <svg viewBox="0 0 64 64" className="h-7 w-7">
               <path d="M10 40 32 18l22 22" fill="none" stroke="#A8E6CF" strokeWidth="5" strokeLinejoin="round" />
               <rect x="18" y="38" width="28" height="12" fill="none" stroke="#A8E6CF" strokeWidth="4" />
@@ -158,7 +158,7 @@ function Panel() {
       </header>
 
       <Section title="Modo de navegación">
-        <div className="grid grid-cols-2 gap-1 rounded-xl bg-black/30 p-1">
+        <div className="grid grid-cols-2 gap-1 rounded-[4px] bg-black/30 p-1">
           {([
             ['walk', 'Recorrido Peatonal', 'Primera persona'],
             ['orbit', 'Vista Orbital', 'Maqueta aérea'],
@@ -166,7 +166,7 @@ function Panel() {
             <button
               key={m}
               onClick={() => st().goMode(m)}
-              className={`rounded-lg px-2 py-2 text-left transition ${target === m ? 'bg-mint text-[#0d1a14] shadow' : 'text-slate-200 hover:bg-white/10'}`}
+              className={`rounded-[3px] px-2 py-2 text-left transition ${target === m ? 'bg-mint text-[#0d1a14] shadow' : 'text-slate-200 hover:bg-white/10'}`}
             >
               <div className="text-[12.5px] font-bold">{l}</div>
               <div className={`text-[10.5px] ${target === m ? 'text-[#25463a]' : 'text-slate-400'}`}>{sub}</div>
@@ -181,14 +181,17 @@ function Panel() {
             <button
               key={w.id}
               onClick={() => st().goWaypoint(w.id)}
-              className={`group flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition ${flight?.label.startsWith(`${w.id}.`) ? 'border-mint/60 bg-mint/10' : 'border-white/8 bg-white/[0.03] hover:border-mint/40 hover:bg-white/[0.07]'}`}
+              className={`group flex items-center gap-3 rounded-[4px] border px-3 py-2 text-left transition ${flight?.label.startsWith(`${w.id}.`) ? 'border-mint/60 bg-mint/10' : 'border-white/8 bg-white/[0.03] hover:border-mint/40 hover:bg-white/[0.07]'}`}
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-bordo font-mono text-[13px] font-bold text-mint">{w.id}</span>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[3px] border border-mint/50 bg-[#0b0f14] font-mono text-[12px] font-medium text-mint">{`0${w.id}`}</span>
               <span>
                 <span className="block text-[12.5px] font-semibold text-white">
                   {w.id}. {w.title}
                 </span>
                 <span className="block text-[11px] text-slate-400">{w.subtitle}</span>
+                <span className="block font-mono text-[9.5px] text-slate-500">
+                  X {w.pos[0].toFixed(1)} · Y {w.pos[1].toFixed(1)} · Z {w.pos[2].toFixed(1)} m
+                </span>
               </span>
             </button>
           ))}
@@ -209,10 +212,10 @@ function Panel() {
             <button
               key={h.id}
               onClick={() => st().openHotspot(h.id, true)}
-              className={`rounded-xl border px-2.5 py-2 text-left transition ${hotspot === h.id ? 'border-mint/60 bg-mint/10' : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.07]'}`}
+              className={`rounded-[4px] border px-2.5 py-2 text-left transition ${hotspot === h.id ? 'border-mint/60 bg-mint/10' : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.07]'}`}
             >
               <div className="flex items-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-mint text-[11px] font-extrabold text-[#0d1a14]">{h.id}</span>
+                <span className="flex h-5 w-5 items-center justify-center rounded-[3px] bg-mint text-[11px] font-extrabold text-[#0d1a14]">{h.id}</span>
                 <span className="text-[12px] font-semibold text-white">{h.label}</span>
               </div>
               <div className="mt-0.5 line-clamp-1 text-[10.5px] text-slate-400">{h.title}</div>
@@ -226,7 +229,7 @@ function Panel() {
       <Section title="Métricas espaciales">
         <div className="grid grid-cols-2 gap-1.5">
           {METRICS.map((m) => (
-            <div key={m.k} className="rounded-lg bg-black/25 px-2.5 py-1.5">
+            <div key={m.k} className="rounded-[3px] bg-black/25 px-2.5 py-1.5">
               <div className="text-[10px] leading-tight text-slate-400">{m.k}</div>
               <div className="font-mono text-[13px] font-semibold text-white">{m.v}</div>
             </div>
@@ -257,7 +260,7 @@ function Panel() {
             ])
             .map(([k, v]) => (
               <li key={k} className="flex justify-between gap-2">
-                <kbd className="rounded-md border border-white/15 bg-white/5 px-1.5 font-mono text-[10.5px] text-mint">{k}</kbd>
+                <kbd className="rounded-[2px] border border-white/15 bg-white/5 px-1.5 font-mono text-[10.5px] text-mint">{k}</kbd>
                 <span className="text-right">{v}</span>
               </li>
             ))}
@@ -289,12 +292,12 @@ function MiniMap() {
     s.flyTo({ label: `Ir a ${zoneAt(q.x, q.y)}`, pos: [q.x, s.eye, q.y], look: [q.x + (p.dx / len) * 5, s.eye, q.y + (p.dz / len) * 5], toMode: 'walk', eye: s.eye })
   }
   return (
-    <div className="glass pointer-events-auto w-[230px] rounded-2xl p-3">
+    <div className="glass pointer-events-auto w-[230px] rounded-[4px] p-3">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-mint/80">Planta · Navegación</span>
         <span className="text-[10px] text-slate-400">clic = ir</span>
       </div>
-      <svg viewBox="-17 -13 34 33" className="w-full cursor-crosshair rounded-lg bg-black/35" onClick={onClick}>
+      <svg viewBox="-17 -13 34 33" className="w-full cursor-crosshair rounded-[3px] bg-black/35" onClick={onClick}>
         <rect x={-15} y={-10} width={30} height={20} fill="rgba(168,230,207,0.05)" stroke="#A8E6CF" strokeOpacity={0.7} strokeWidth={0.25} />
         <rect x={-ENTRANCE.w / 2} y={9.8} width={ENTRANCE.w} height={0.4} fill="#0b0f14" />
         {DOCKS.map((d) => (
@@ -370,10 +373,10 @@ function VRButton() {
   }
   return (
     <div className="pointer-events-auto flex flex-col items-end gap-2">
-      {msg && <div className="glass max-w-[260px] rounded-xl px-3 py-2 text-[12px] text-slate-200">{msg}</div>}
+      {msg && <div className="glass max-w-[260px] rounded-[4px] px-3 py-2 text-[12px] text-slate-200">{msg}</div>}
       <button
         onClick={click}
-        className="group flex items-center gap-2.5 rounded-2xl border border-mint/50 bg-gradient-to-br from-bordo to-[#3a0f20] px-4 py-3 font-bold text-white shadow-xl shadow-black/40 transition hover:scale-[1.03] hover:border-mint"
+        className="group flex items-center gap-2.5 rounded-[4px] border border-mint/50 bg-gradient-to-br from-bordo to-[#3a0f20] px-4 py-3 font-bold text-white shadow-xl shadow-black/40 transition hover:scale-[1.03] hover:border-mint"
       >
         <svg viewBox="0 0 24 24" className="h-6 w-6 text-mint" fill="currentColor">
           <path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4.2l-1.6-2.4a1.4 1.4 0 0 0-2.4 0L9.2 17H5a2 2 0 0 1-2-2V7Zm5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm8 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
@@ -392,7 +395,7 @@ function VRButton() {
 function Hold({ label, onChange, className = '' }: { label: ReactNode; onChange: (on: boolean) => void; className?: string }) {
   return (
     <button
-      className={`no-select flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-black/45 text-lg font-bold text-white backdrop-blur active:bg-mint active:text-[#0d1a14] ${className}`}
+      className={`no-select flex h-12 w-12 items-center justify-center rounded-[4px] border border-white/15 bg-black/45 text-lg font-bold text-white backdrop-blur active:bg-mint active:text-[#0d1a14] ${className}`}
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId)
         onChange(true)
@@ -434,8 +437,8 @@ function Welcome() {
   if (started) return null
   return (
     <div className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-black/40 via-black/55 to-black/75 p-4">
-      <div className="glass w-full max-w-lg rounded-3xl p-7 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-bordo ring-1 ring-mint/40">
+      <div className="glass w-full max-w-lg rounded-[4px] p-7 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-[4px] bg-bordo ring-1 ring-mint/40">
           <svg viewBox="0 0 64 64" className="h-9 w-9">
             <path d="M10 40 32 18l22 22" fill="none" stroke="#A8E6CF" strokeWidth="5" strokeLinejoin="round" />
             <rect x="18" y="38" width="28" height="12" fill="none" stroke="#A8E6CF" strokeWidth="4" />
@@ -450,7 +453,7 @@ function Welcome() {
             ['Maqueta', 'Vista orbital del edificio'],
             ['BIM + VR', 'Rayos X estructural y Meta Quest'],
           ].map(([a, b]) => (
-            <div key={a} className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+            <div key={a} className="rounded-[4px] border border-white/10 bg-white/[0.04] p-2.5">
               <div className="font-bold text-white">{a}</div>
               <div className="text-slate-400">{b}</div>
             </div>
@@ -462,7 +465,7 @@ function Welcome() {
             s.start()
             s.goWaypoint(1)
           }}
-          className="mt-6 w-full rounded-2xl bg-mint py-3.5 text-[15px] font-extrabold text-[#0d1a14] shadow-lg shadow-mint/20 transition hover:brightness-105"
+          className="mt-6 w-full rounded-[4px] bg-mint py-3.5 text-[15px] font-extrabold text-[#0d1a14] shadow-lg shadow-mint/20 transition hover:brightness-105"
         >
           Iniciar recorrido
         </button>
@@ -495,7 +498,7 @@ export function HUD() {
           <div className="absolute top-3 bottom-3 left-3 flex min-h-0 flex-col items-start gap-2">
             <button
               onClick={() => useStore.getState().toggleHud()}
-              className="glass pointer-events-auto rounded-xl px-3 py-1.5 text-[12px] font-semibold text-mint hover:text-white"
+              className="glass pointer-events-auto rounded-[4px] px-3 py-1.5 text-[12px] font-semibold text-mint hover:text-white"
             >
               {hudOpen ? '◂ Ocultar panel' : '▸ Panel de control'}
             </button>
@@ -509,27 +512,27 @@ export function HUD() {
 
       {flight && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2">
-          <div className="glass flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-semibold text-white">
-            <span className="h-2 w-2 animate-ping rounded-full bg-mint" /> {flight.label}
+          <div className="glass flex items-center gap-2 rounded-[3px] px-4 py-2 text-[13px] font-semibold text-white">
+            <span className="h-2 w-2 animate-ping rounded-[3px] bg-mint" /> {flight.label}
           </div>
         </div>
       )}
 
       {walking && locked && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div className={`h-5 w-5 rounded-full border-2 transition ${aim ? 'scale-125 border-mint bg-mint/30' : 'border-white/80'}`} />
-          {aim && <div className="mt-2 -translate-x-1/3 rounded-md bg-black/60 px-2 py-0.5 text-[11px] whitespace-nowrap text-mint">Clic: Hotspot {aim}</div>}
+          <div className={`h-5 w-5 rounded-[3px] border-2 transition ${aim ? 'scale-125 border-mint bg-mint/30' : 'border-white/80'}`} />
+          {aim && <div className="mt-2 -translate-x-1/3 rounded-[2px] bg-black/60 px-2 py-0.5 text-[11px] whitespace-nowrap text-mint">Clic: Hotspot {aim}</div>}
         </div>
       )}
 
       <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
         <button
           data-lock
-          className={`glass pointer-events-auto rounded-full px-4 py-2 max-sm:!hidden text-[12.5px] font-semibold text-white transition hover:border-mint/50 ${walking && !locked && !coarse && !inXR ? '' : 'hidden'}`}
+          className={`glass pointer-events-auto rounded-[3px] px-4 py-2 max-sm:!hidden text-[12.5px] font-semibold text-white transition hover:border-mint/50 ${walking && !locked && !coarse && !inXR ? '' : 'hidden'}`}
         >
           <span className="text-mint">◉</span> Mirar con mouse (PointerLock) · <span className="text-slate-400">WASD para caminar</span>
         </button>
-        {walking && locked && <div className="rounded-full bg-black/50 px-3 py-1 text-[11.5px] text-slate-300">ESC para liberar el mouse</div>}
+        {walking && locked && <div className="rounded-[3px] bg-black/50 px-3 py-1 text-[11.5px] text-slate-300">ESC para liberar el mouse</div>}
       </div>
 
       {walking && !inXR && (
