@@ -22,6 +22,8 @@ type State = {
   bim: boolean
   cutRoof: boolean
   reflections: boolean
+  clay: boolean
+  ao: boolean
   hotspot: string | null
   aimHotspot: string | null
   flight: Flight | null
@@ -49,6 +51,8 @@ export const useStore = create<State>((set, get) => ({
   bim: false,
   cutRoof: false,
   reflections: true,
+  clay: false,
+  ao: true,
   hotspot: null,
   aimHotspot: null,
   flight: null,

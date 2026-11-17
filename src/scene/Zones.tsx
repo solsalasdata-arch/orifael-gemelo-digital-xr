@@ -317,7 +317,6 @@ function Exterior() {
     for (let x = -58; x <= 58; x += 4) m.push(boxAt(x, 0.012, 17.3, 2, 0.004, 0.14))
     return m
   }, [])
-  const trees = [-24, -19, 19, 24, 30, -30]
   return (
     <group>
       <mesh rotation-x={-Math.PI / 2} position-y={-0.03} receiveShadow>
@@ -346,20 +345,6 @@ function Exterior() {
       <group position={[3.6, 3.0, HALF_D + 0.35]}>
         <LightPanel id="numero" lines={['437', 'Gdor. Tello']} style="street" size={[0.7, 0.35]} position={[0, 0, 0]} glow={0.5} res={[512, 256]} />
       </group>
-      {trees.map((x, i) => (
-        <group key={i} position={[x, 0, HALF_D + 2.2]}>
-          <mesh position-y={1.2} castShadow>
-            <cylinderGeometry args={[0.12, 0.16, 2.4, 8]} />
-            <meshStandardMaterial color="#5a4330" roughness={1} />
-          </mesh>
-          {[[0, 3.2, 0, 1.25], [0.7, 2.8, 0.3, 0.9], [-0.6, 2.9, -0.4, 0.95], [0.1, 3.8, -0.2, 0.8]].map(([x, y, z, r], j) => (
-            <mesh key={j} position={[x, y, z]} castShadow>
-              <icosahedronGeometry args={[r, 3]} />
-              <meshStandardMaterial color={(i + j) % 2 ? '#56634b' : '#4a5741'} roughness={1} />
-            </mesh>
-          ))}
-        </group>
-      ))}
       <UrbanContext />
     </group>
   )

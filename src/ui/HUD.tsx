@@ -130,6 +130,8 @@ function Panel() {
   const bim = useStore((s) => s.bim)
   const cutRoof = useStore((s) => s.cutRoof)
   const reflections = useStore((s) => s.reflections)
+  const clay = useStore((s) => s.clay)
+  const ao = useStore((s) => s.ao)
   const hotspot = useStore((s) => s.hotspot)
   const flight = useStore((s) => s.flight)
   const st = useStore.getState
@@ -202,6 +204,8 @@ function Panel() {
         <div className="grid gap-1.5">
           <Toggle on={bim} onClick={() => st().set({ bim: !bim })} label="Vista Estructural / Rayos X (BIM Wireframe)" hint="Paredes, columnas y cabriadas en cian" accent="bim" />
           <Toggle on={cutRoof} onClick={() => st().set({ cutRoof: !cutRoof })} label="Corte de cubierta" hint="Oculta chapas para ver el interior" />
+          <Toggle on={clay} onClick={() => st().set({ clay: !clay })} label="Clay Render (maqueta arquitectónica)" hint="Materiales neutros mate para leer volumen y estructura" />
+          <Toggle on={ao} onClick={() => st().set({ ao: !ao })} label="Oclusión ambiental (AO)" hint="Sombras de contacto suaves · se apaga sola por debajo de 24 FPS" />
           <Toggle on={reflections} onClick={() => st().set({ reflections: !reflections })} label="Reflejos del piso pulido" hint="Desactivar en equipos lentos" />
         </div>
       </Section>
