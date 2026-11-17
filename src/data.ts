@@ -35,19 +35,19 @@ export const PATIO_WALL_H = 3.0
 export const COL_Z = [10, 5, 0, -4.5, ROOF_Z0]
 
 export const OFFICE = { x0: -IN_X, x1: -3.0, z0: 7.2, z1: 11.6, h: 2.8, doorZ: [7.9, 8.9] as [number, number] }
-export const KITCHEN = { x0: -IN_X, x1: -3.6, z0: -8.7, z1: -6.9, h: 2.6, doorZ: [-8.1, -7.3] as [number, number] }
-export const BATH = { x0: -IN_X, x1: -3.6, z0: -6.9, z1: -5.2, h: 2.6, doorZ: [-6.2, -5.4] as [number, number] }
+export const KITCHEN = { x0: -IN_X, x1: -3.6, z0: 5.45, z1: 7.15, h: 2.6, doorZ: [5.95, 6.75] as [number, number] }
+export const BATH = { x0: -IN_X, x1: -3.6, z0: 3.75, z1: 5.45, h: 2.6, doorZ: [4.2, 5.0] as [number, number] }
 export const SALON = { x0: 2.05, x1: IN_X, z0: 8.4, z1: IN_Z, h: 3.0, openX: [2.4, 3.6] as [number, number] }
-export const SHELF_RUN = { x0: -IN_X, x1: -5.35, z0: -4.9, z1: 6.9, h: 2.6 }
+export const SHELF_RUN = { x0: -IN_X, x1: -5.35, z0: -4.9, z1: 3.55, h: 2.6 }
 export const PICKUP = { x: 3.6, z: -11.2, rotY: Math.PI / 2 }
 export const STACKER = { x: -0.6, z: -2.2, rotY: 0 }
 
 export const BEV_PALLETS: [number, number][] = (() => {
   const out: [number, number][] = []
-  for (let z = 7.2; z > -7.6; z -= 1.12) for (const x of [3.25, 4.55]) out.push([x, Math.round(z * 100) / 100])
+  for (let z = 4.96; z > -7.6; z -= 1.12) for (const x of [3.25, 4.55]) out.push([x, Math.round(z * 100) / 100])
   return out
 })()
-export const CRATE_WALL = { x0: 5.3, x1: IN_X, z0: -7.6, z1: 7.8 }
+export const CRATE_WALL = { x0: 5.3, x1: IN_X, z0: -7.6, z1: 5.5 }
 
 export const SUN_DIR: V3 = (() => {
   const v = [-0.55, 0.74, 0.38]
@@ -65,7 +65,7 @@ export const WAYPOINTS: Waypoint[] = [
   { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Frente de 13 m · portón principal y portón con puerta de escape', pos: [0.2, EYE, 23.2], look: [0.2, 2.7, 14] },
   { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Nave única · apilador WIEBEL · estanterías izq. · bebidas der.', pos: [-1.6, EYE, 9.2], look: [-0.8, 1.5, -10] },
   { id: 3, title: 'Estructura de Cubierta (Losa y Vigas)', subtitle: 'Vista elevada a 3,6 m bajo la losa de H°A°', pos: [-1.4, 3.6, 6.5], look: [0.4, 4.6, -6] },
-  { id: 4, title: 'Zona de Despacho', subtitle: 'Cocina · baño · patio trasero no techado', pos: [-0.4, EYE, -3.6], look: [1.4, 1.2, -14] },
+  { id: 4, title: 'Zona de Despacho', subtitle: 'Despacho · patio trasero no techado', pos: [-0.4, EYE, -3.6], look: [1.4, 1.2, -14] },
 ]
 
 export const ORBIT_VIEW = { pos: [-26, 58, 58] as V3, target: [0, 0, 5] as V3 }
@@ -232,7 +232,6 @@ export const COLLIDERS: Box2[] = [
   box(CRATE_WALL.x0, CRATE_WALL.x1, CRATE_WALL.z0, CRATE_WALL.z1, 2.2),
   box(PICKUP.x - 1.0, PICKUP.x + 1.0, PICKUP.z - 3.35, PICKUP.z + 2.95, 2.4),
   box(STACKER.x - 0.45, STACKER.x + 0.45, STACKER.z - 1.3, STACKER.z + 0.75, 2.4),
-  box(-1.8, 0.4, -8.4, -7.4, 1.0),
   box(FRONT.gate2.x1 + 0.2, FRONT.gate2.x1 + 0.9, 15.3, 16.2, 1.4),
 ]
 
@@ -240,10 +239,10 @@ export function zoneAt(x: number, z: number): string {
   if (z > HALF_D) return z < SIDEWALK.z1 ? 'Playón / vereda · Gdor. Tello 437' : 'Calle Gdor. Tello'
   if (Math.abs(x) > HALF_W || z < -HALF_D) return 'Exterior · linderos'
   if (x < OFFICE.x1 && z > OFFICE.z0) return 'Box de madera · Oficina'
-  if (x > SALON.x0 && z > SALON.z0) return 'Salón de ventas · Mostrador'
-  if (z < ROOF_Z0) return 'Patio trasero no techado · Vehículos'
   if (x < KITCHEN.x1 && z > KITCHEN.z0 && z < KITCHEN.z1) return 'Cocina (office)'
   if (x < BATH.x1 && z > BATH.z0 && z < BATH.z1) return 'Baño'
+  if (x > SALON.x0 && z > SALON.z0) return 'Salón de ventas · Mostrador'
+  if (z < ROOF_Z0) return 'Patio trasero no techado · Vehículos'
   if (z < -6.8) return 'Despacho'
   if (x < -4.4) return 'Estanterías de madera'
   if (x > 2.5) return 'Pallets de bebidas'

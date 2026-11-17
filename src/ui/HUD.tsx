@@ -322,8 +322,8 @@ function MiniMap() {
             ['BEB', 0, -4],
             ['SALÓN', 11.6, -4.2],
             ['OF.', 9.4, 4.7],
-            ['COCINA', -7.8, 4.9],
-            ['BAÑO', -6.05, 4.9],
+            ['COCINA', 6.3, 4.9],
+            ['BAÑO', 4.6, 4.9],
             ['PATIO', -12.2, -1.2],
           ] as [string, number, number][]
         ).map(([t, u, v]) => (

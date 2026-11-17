@@ -167,9 +167,8 @@ function RackSection({ z0, z1, seed }: { z0: number; z1: number; seed: number })
 function ShelfRun() {
   const { z0, z1 } = SHELF_RUN
   const parts: [number, number, 'wood' | 'rack'][] = [
-    [z0, -0.6, 'rack'],
-    [-0.4, 3.2, 'wood'],
-    [3.4, z1, 'rack'],
+    [z0, -1.2, 'wood'],
+    [-1.0, z1, 'rack'],
   ]
   return (
     <group>
@@ -480,12 +479,6 @@ function Stacker() {
 function Despacho() {
   return (
     <group>
-      <mesh position={[-0.7, 0.45, -7.9]} material={plankMat(2, 1)} castShadow receiveShadow>
-        <boxGeometry args={[2.2, 0.9, 1.0]} />
-      </mesh>
-      <mesh position={[-1.3, 0.98, -8.0]} material={boxMat(0)} castShadow>
-        <boxGeometry args={[0.5, 0.18, 0.4]} />
-      </mesh>
       <group position={[0.8, 0, -9.6]} rotation-y={0.4}>
         {[-0.2, 0.2].map((x) => (
           <mesh key={x} position={[x, 0.06, -0.55]} material={yellowMat()} castShadow>
