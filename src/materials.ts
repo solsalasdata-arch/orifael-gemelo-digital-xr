@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { corrugatedTex, concreteTex, hazardTex, repeated, woodTex, boxTex } from './textures'
+import { brickTex, corrugatedTex, concreteTex, hazardTex, plankTex, repeated, woodTex, boxTex } from './textures'
 
 const memo = new Map<string, THREE.Material>()
 function once<T extends THREE.Material>(key: string, f: () => T): T {
@@ -15,14 +15,14 @@ export const BIM_COLOR = '#38f3ff'
 
 export const wallMat = (len: number, h: number) =>
   once(`wall-${len.toFixed(2)}-${h.toFixed(2)}`, () => {
-    const t = repeated(corrugatedTex(), len, h)
-    return new THREE.MeshStandardMaterial({ color: '#d4d8dc', map: t, bumpMap: t, bumpScale: 2, metalness: 0.35, roughness: 0.55 })
+    const t = repeated(brickTex(), len, h)
+    return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 1.5, roughness: 0.92 })
   })
 
 export const gableMat = () =>
   once('gable', () => {
-    const t = repeated(corrugatedTex(), 1, 1)
-    return new THREE.MeshStandardMaterial({ color: '#d4d8dc', map: t, bumpMap: t, bumpScale: 2, metalness: 0.35, roughness: 0.55 })
+    const t = repeated(brickTex(), 1, 1)
+    return new THREE.MeshStandardMaterial({ map: t, bumpMap: t, bumpScale: 1.5, roughness: 0.92 })
   })
 
 export const shutterMat = (w: number, h: number) =>
@@ -47,7 +47,12 @@ export const skylightMat = () =>
   )
 
 export const steelMat = () => once('steel', () => new THREE.MeshStandardMaterial({ color: '#9aa3ab', metalness: 0.85, roughness: 0.35 }))
-export const columnMat = () => once('column', () => new THREE.MeshStandardMaterial({ color: '#5C1A33', metalness: 0.45, roughness: 0.45 }))
+export const columnMat = () => once('column', () => new THREE.MeshStandardMaterial({ color: '#c9c6c0', map: repeated(concreteTex(), 0.4, 2), roughness: 0.88 }))
+export const concreteBeamMat = () => once('cbeam', () => new THREE.MeshStandardMaterial({ color: '#c4c1bb', map: repeated(concreteTex(), 6, 0.3), roughness: 0.9 }))
+export const plankMat = (rx = 1, ry = 1) =>
+  once(`plank-${rx}-${ry}`, () => new THREE.MeshStandardMaterial({ map: repeated(plankTex(), rx, ry), roughness: 0.75 }))
+export const plasterMat = (rx: number, ry: number) =>
+  once(`plaster-${rx.toFixed(1)}-${ry.toFixed(1)}`, () => new THREE.MeshStandardMaterial({ color: '#d2d0cb', map: repeated(concreteTex(), rx / 6, ry / 6), roughness: 0.93 }))
 export const darkSteelMat = () => once('dsteel', () => new THREE.MeshStandardMaterial({ color: '#2b3035', metalness: 0.7, roughness: 0.45 }))
 export const hazardMat = () => once('hazard', () => new THREE.MeshStandardMaterial({ map: repeated(hazardTex(), 1, 4), roughness: 0.6 }))
 export const rubberMat = () => once('rubber', () => new THREE.MeshStandardMaterial({ color: '#121314', roughness: 0.9 }))

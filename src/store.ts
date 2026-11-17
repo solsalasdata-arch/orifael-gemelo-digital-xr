@@ -86,3 +86,5 @@ export const useStore = create<State>((set, get) => ({
     get().flyTo({ label: `Hotspot ${h.id} · ${h.label}`, pos: h.view.pos, look: h.view.look, toMode: 'walk', eye: h.view.pos[1] })
   },
 }))
+
+if (typeof window !== 'undefined') (window as unknown as { orifaelStore: typeof useStore }).orifaelStore = useStore

@@ -69,8 +69,7 @@ export function Racks() {
       })
     })
     const staged: [number, number, number][] = [
-      [-11.5, -7.2, 0], [-10.2, -7.2, 0.05], [-5.8, -7.4, -0.08], [10.2, -7.2, 0], [11.6, -7.3, 0.04], [12.9, -7.2, 0],
-      [-3.2, -8.6, 0.12], [11.0, 7.3, 0], [12.5, 7.3, 0.03],
+      [6.2, -8.7, 0.1], [11.0, 7.3, 0], [12.5, 7.3, 0.03],
     ]
     staged.forEach(([x, z, ry]) => fillPallet(stock, r, x, 0, z, 4, ry))
     return { uprights, beams, guards, stock }

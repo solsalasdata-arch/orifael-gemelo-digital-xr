@@ -283,3 +283,204 @@ export function signTex(key: string, lines: string[], style: SignStyle, w = 1024
     }
   })
 }
+
+export const brickTex = () =>
+  make('brick', 1024, 1024, (ctx, w, h) => {
+    ctx.fillStyle = '#9c8f84'
+    ctx.fillRect(0, 0, w, h)
+    const rows = 5
+    const cols = 3
+    const rh = h / rows
+    const cw = w / cols
+    const m = 14
+    const r = rng(31)
+    const pal = ['#b5563a', '#c0623f', '#a94d34', '#c86d48', '#b85d3f', '#a2492f', '#cf7752']
+    for (let y = 0; y < rows; y++) {
+      const off = y % 2 ? cw / 2 : 0
+      for (let x = -1; x <= cols; x++) {
+        const bx = x * cw + off + m / 2
+        const by = y * rh + m / 2
+        const bw = cw - m
+        const bh = rh - m
+        ctx.fillStyle = pal[Math.floor(r() * pal.length)]
+        ctx.fillRect(bx, by, bw, bh)
+        const g = ctx.createLinearGradient(0, by, 0, by + bh)
+        g.addColorStop(0, 'rgba(255,220,190,0.12)')
+        g.addColorStop(1, 'rgba(60,20,10,0.18)')
+        ctx.fillStyle = g
+        ctx.fillRect(bx, by, bw, bh)
+        ctx.strokeStyle = 'rgba(70,25,12,0.18)'
+        ctx.lineWidth = 3
+        for (let k = 1; k < 4; k++) {
+          ctx.beginPath()
+          ctx.moveTo(bx + 6, by + (bh * k) / 4)
+          ctx.lineTo(bx + bw - 6, by + (bh * k) / 4)
+          ctx.stroke()
+        }
+        for (let k = 0; k < 30; k++) {
+          ctx.fillStyle = `rgba(${r() > 0.5 ? '255,230,210' : '60,20,10'},${0.05 + r() * 0.1})`
+          ctx.fillRect(bx + r() * bw, by + r() * bh, 4 + r() * 18, 2 + r() * 6)
+        }
+        if (r() > 0.8) {
+          ctx.fillStyle = 'rgba(200,195,185,0.35)'
+          ctx.fillRect(bx + r() * bw * 0.6, by + bh - 10, 30 + r() * 60, 12)
+        }
+      }
+    }
+    noise(ctx, w, h, 22, 5)
+  })
+
+export const plankTex = () =>
+  make('plank', 512, 1024, (ctx, w, h) => {
+    const n = 6
+    const pw = w / n
+    const r = rng(77)
+    const pal = ['#8a5a36', '#7b4e2e', '#94623b', '#6f4428', '#9a6a43']
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = pal[Math.floor(r() * pal.length)]
+      ctx.fillRect(i * pw, 0, pw, h)
+      for (let k = 0; k < 40; k++) {
+        ctx.strokeStyle = `rgba(${r() > 0.5 ? '50,25,10' : '200,150,100'},${0.08 + r() * 0.12})`
+        ctx.lineWidth = 1 + r() * 2.5
+        const x = i * pw + r() * pw
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.bezierCurveTo(x + (r() - 0.5) * 18, h * 0.3, x + (r() - 0.5) * 18, h * 0.7, x + (r() - 0.5) * 10, h)
+        ctx.stroke()
+      }
+      ctx.fillStyle = 'rgba(30,15,5,0.55)'
+      ctx.fillRect(i * pw, 0, 3, h)
+    }
+    noise(ctx, w, h, 16, 9)
+  })
+
+export const orifaelSignTex = () =>
+  make('orifael-sign', 2048, 640, (ctx, w, h) => {
+    const r = rng(12)
+    const n = 14
+    for (let i = 0; i < n; i++) {
+      const pw = w / n
+      ctx.fillStyle = ['#4a3020', '#3f2819', '#553724', '#47301f'][i % 4]
+      ctx.fillRect(i * pw, 0, pw, h)
+      for (let k = 0; k < 60; k++) {
+        ctx.strokeStyle = `rgba(${r() > 0.5 ? '25,12,5' : '140,95,60'},${0.12 + r() * 0.15})`
+        ctx.lineWidth = 1 + r() * 3
+        const x = i * pw + r() * pw
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x + (r() - 0.5) * 14, h)
+        ctx.stroke()
+      }
+      ctx.fillStyle = 'rgba(0,0,0,0.5)'
+      ctx.fillRect(i * pw, 0, 4, h)
+    }
+    const vg = ctx.createRadialGradient(w / 2, h / 2, h * 0.2, w / 2, h / 2, w * 0.6)
+    vg.addColorStop(0, 'rgba(255,220,180,0.12)')
+    vg.addColorStop(1, 'rgba(0,0,0,0.35)')
+    ctx.fillStyle = vg
+    ctx.fillRect(0, 0, w, h)
+    ctx.textBaseline = 'alphabetic'
+    ctx.shadowColor = 'rgba(0,0,0,0.6)'
+    ctx.shadowBlur = 14
+    ctx.shadowOffsetY = 6
+    ctx.font = '900 300px Inter, Arial Black, sans-serif'
+    const word = 'ORIFAEL'
+    const total = ctx.measureText(word).width + 60
+    let x = (w - total) / 2
+    const y = 300
+    for (const [i, ch] of [...word].entries()) {
+      ctx.fillStyle = i === 0 ? '#9b1b1f' : '#f1f1ee'
+      ctx.fillText(ch, x, y)
+      if (i === 0) {
+        ctx.lineWidth = 10
+        ctx.strokeStyle = '#f1f1ee'
+        ctx.strokeText(ch, x, y)
+      }
+      x += ctx.measureText(ch).width + 10
+    }
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#f4f1ea'
+    ctx.font = '800 82px Inter, Arial, sans-serif'
+    ctx.fillText('MAYORISTA Y MINORISTA', w / 2, 410)
+    ctx.font = '700 56px Inter, Arial, sans-serif'
+    ctx.fillText('VENTA DE MERCADERÍA, BEBIDAS Y ARTÍCULOS DE LIMPIEZA', w / 2, 500)
+    ctx.shadowBlur = 0
+    ctx.font = '600 46px Inter, Arial, sans-serif'
+    ctx.textAlign = 'left'
+    const items: [string, string][] = [
+      ['#25d366', 'Tel: 388 4332421'],
+      ['#d62976', '@distribuidoraorifael'],
+      ['#1877f2', 'Distribuidora Orifael'],
+    ]
+    items.forEach(([c, t], i) => {
+      const ix = 120 + i * 640
+      ctx.fillStyle = c
+      ctx.beginPath()
+      ctx.roundRect(ix, 548, 48, 48, 10)
+      ctx.fill()
+      ctx.fillStyle = '#f4f1ea'
+      ctx.fillText(t, ix + 66, 588)
+    })
+  })
+
+export const offerTex = (key: string, lines: string[], bg = '#d9f33c', fg = '#151515') =>
+  make(`offer-${key}`, 512, 256, (ctx, w, h) => {
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = 'rgba(0,0,0,0.06)'
+    for (let i = 0; i < 40; i++) ctx.fillRect(Math.random() * w, Math.random() * h, 30, 2)
+    ctx.fillStyle = fg
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    const big = lines.length === 1 ? 92 : lines.length === 2 ? 74 : 56
+    lines.forEach((l, i) => {
+      ctx.font = `800 ${i === 0 ? big : big * 0.72}px "Comic Sans MS", "Marker Felt", Inter, sans-serif`
+      const y = h / 2 + (i - (lines.length - 1) / 2) * big * 0.95
+      ctx.save()
+      ctx.translate(w / 2, y)
+      ctx.rotate(-0.02 + i * 0.015)
+      ctx.fillText(l, 0, 0, w - 40)
+      ctx.restore()
+    })
+  })
+
+export const bevPackTex = (v: number) =>
+  make(`bev-${v}`, 512, 512, (ctx, w, h) => {
+    const r = rng(100 + v)
+    const sets = [
+      ['#3b1a10', '#c8102e'],
+      ['#f08a1c', '#1b5e20'],
+      ['#9be15d', '#0d47a1'],
+      ['#7fc8f8', '#e3f2fd'],
+    ]
+    ctx.fillStyle = '#2b2b2b'
+    ctx.fillRect(0, 0, w, h)
+    const rows = 4
+    const ph = h / rows
+    for (let y = 0; y < rows; y++) {
+      const [liq, label] = sets[(v + y + Math.floor(r() * 2)) % sets.length]
+      const bottles = 8
+      const bw = w / bottles
+      for (let b = 0; b < bottles; b++) {
+        const bx = b * bw
+        const by = y * ph
+        ctx.fillStyle = liq
+        ctx.beginPath()
+        ctx.roundRect(bx + 6, by + ph * 0.22, bw - 12, ph * 0.74, 14)
+        ctx.fill()
+        ctx.fillRect(bx + bw * 0.38, by + 6, bw * 0.24, ph * 0.2)
+        ctx.fillStyle = label
+        ctx.fillRect(bx + 6, by + ph * 0.48, bw - 12, ph * 0.22)
+        ctx.fillStyle = 'rgba(255,255,255,0.25)'
+        ctx.fillRect(bx + 12, by + ph * 0.26, 5, ph * 0.6)
+      }
+      ctx.fillStyle = 'rgba(20,20,20,0.85)'
+      ctx.fillRect(0, y * ph + ph - 5, w, 5)
+    }
+    const g = ctx.createLinearGradient(0, 0, w, h)
+    g.addColorStop(0, 'rgba(255,255,255,0.18)')
+    g.addColorStop(0.5, 'rgba(255,255,255,0.02)')
+    g.addColorStop(1, 'rgba(255,255,255,0.14)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+  })

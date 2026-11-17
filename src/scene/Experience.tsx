@@ -9,6 +9,7 @@ import { Dimensions } from './Dimensions'
 import { Hotspots } from './Hotspots'
 import { INITIAL_CAMERA, Navigation } from './Navigation'
 import { Racks } from './Racks'
+import { RealSite } from './RealSite'
 import { Zones } from './Zones'
 
 const SUN_POS: [number, number, number] = [SUN_DIR[0] * 60, SUN_DIR[1] * 60, SUN_DIR[2] * 60]
@@ -69,6 +70,7 @@ export function Experience() {
       <Building />
       <Racks />
       <Zones />
+      <RealSite />
       <Hotspots />
       <Dimensions />
       <Navigation />

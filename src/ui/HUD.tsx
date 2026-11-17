@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { HOTSPOTS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE } from '../data'
+import { HOTSPOTS, PHOTOS, PHOTO_KEYS, PICKUP, STAIRS, BEV_PALLETS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE } from '../data'
 import { isBlocked } from '../scene/Navigation'
 import { useStore } from '../store'
 import { xrStore } from '../xr'
@@ -157,6 +157,26 @@ function Panel() {
         </div>
       </Section>
 
+      <Section title="Relevamiento fotográfico real">
+        <div className="grid grid-cols-4 gap-1.5">
+          {PHOTO_KEYS.map((k) => {
+            const h = HOTSPOTS.find((x) => x.photo === k)
+            return (
+              <button
+                key={k}
+                title={PHOTOS[k].caption}
+                onClick={() => h && st().openHotspot(h.id, true)}
+                className="group relative overflow-hidden rounded-lg ring-1 ring-white/10 hover:ring-mint"
+              >
+                <img src={`${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`} alt={PHOTOS[k].short} className="h-16 w-full object-cover transition group-hover:scale-105" draggable={false} />
+                {h && <span className="absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-mint text-[9px] font-extrabold text-[#0d1a14]">{h.id}</span>}
+              </button>
+            )
+          })}
+        </div>
+        <p className="mt-1.5 text-[10.5px] text-slate-400">Fotos del sitio aplicadas en murales 3D y en las tarjetas de hotspots.</p>
+      </Section>
+
       <Section title="Métricas espaciales">
         <div className="grid grid-cols-2 gap-1.5">
           {METRICS.map((m) => (
@@ -237,7 +257,13 @@ function MiniMap() {
         {RACK_ROWS.map((c) => (
           <rect key={c} x={c - RACK_HALF_DEPTH} y={RACK_Z0} width={RACK_HALF_DEPTH * 2} height={RACK_Z1 - RACK_Z0} fill="#1f4f8f" opacity={0.85} rx={0.15} />
         ))}
-        <rect x={-12.6} y={6.1} width={4.3} height={1} fill="#5C1A33" />
+        <rect x={-12.6} y={6.2} width={4.4} height={0.8} fill="#8a5a36" />
+        <rect x={PICKUP.x - 2.65} y={PICKUP.z - 0.93} width={5.3} height={1.86} fill="#c8102e" rx={0.4} />
+        <rect x={STAIRS.landing.x0} y={STAIRS.landing.z0} width={STAIRS.landing.x1 - STAIRS.landing.x0} height={STAIRS.landing.z1 - STAIRS.landing.z0} fill="#9a9792" />
+        <rect x={STAIRS.x0} y={STAIRS.zTop} width={STAIRS.x1 - STAIRS.x0} height={STAIRS.zBottom - STAIRS.zTop} fill="#c4c1bb" />
+        {BEV_PALLETS.map(([x, z]) => (
+          <rect key={`${x}${z}`} x={x - 0.6} y={z - 0.5} width={1.2} height={1} fill="#f08a1c" opacity={0.8} />
+        ))}
         <rect x={-1.3} y={-19.5} width={2.6} height={9} fill="#e8e8e8" opacity={0.5} />
         <rect x={-17} y={13.2} width={34} height={7} fill="#3d4044" opacity={0.7} />
         <text x={0} y={17.6} textAnchor="middle" fontSize={1.4} fill="#cbd5dc" fontWeight={700}>

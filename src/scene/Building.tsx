@@ -47,21 +47,21 @@ function Floor() {
       {reflections && !inXR ? (
         <MeshReflectorMaterial
           map={map}
-          color="#b4b6b8"
-          blur={[400, 120]}
+          color="#c8c6c1"
+          blur={[500, 160]}
           resolution={1024}
           mixBlur={1}
-          mixStrength={2.2}
+          mixStrength={1.3}
           mixContrast={1}
-          roughness={0.62}
-          metalness={0.12}
+          roughness={0.78}
+          metalness={0.05}
           depthScale={1.1}
           minDepthThreshold={0.4}
           maxDepthThreshold={1.3}
-          mirror={0.55}
+          mirror={0.35}
         />
       ) : (
-        <meshStandardMaterial map={map} color="#b4b6b8" roughness={0.45} metalness={0.1} />
+        <meshStandardMaterial map={map} color="#c8c6c1" roughness={0.7} metalness={0.05} />
       )}
     </mesh>
   )
@@ -200,7 +200,7 @@ function Columns() {
         const h = Math.abs(z) > 9 ? EAVE : topY(z) - 0.1
         return (
           <group key={i}>
-            <SBox pos={[x, h / 2, z]} size={[0.32, h, 0.3]} material={columnMat()} bimMaterial={bimSolidMat()} />
+            <SBox pos={[x, h / 2, z]} size={[0.4, h, 0.4]} material={columnMat()} bimMaterial={bimSolidMat()} />
             <SBox pos={[x, 0.03, z]} size={[0.6, 0.06, 0.6]} material={darkSteelMat()} bimMaterial={bimSolidMat()} edges={false} />
           </group>
         )

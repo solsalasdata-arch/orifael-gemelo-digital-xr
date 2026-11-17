@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { BAY_CENTERS, BOTTOM_CHORD, HALF_D, HALF_W, RACK_ROWS, RACK_Z0, RACK_Z1 } from '../data'
-import { bordoMat, darkSteelMat, glassMat, lampMat, mintGlowMat, rubberMat, whiteMat, yellowMat } from '../materials'
+import { bordoMat, darkSteelMat, lampMat, mintGlowMat, rubberMat, whiteMat, yellowMat } from '../materials'
 import { asphaltTex, repeated, sidewalkTex, signTex, type SignStyle } from '../textures'
 import { InstancedBoxes, boxAt } from './Instanced'
 
@@ -68,15 +68,6 @@ function Signage() {
         glow={1.6}
         res={[2048, 512]}
       />
-      <LightPanel
-        id="brand-front"
-        lines={['DISTRIBUIDORA ORIFAEL', 'Centro Logístico Jujuy · Gdor. Tello 437']}
-        style="brand"
-        size={[9, 1.8]}
-        position={[0, 5.75, HALF_D + 0.32]}
-        glow={1.4}
-        res={[2048, 410]}
-      />
       <Hanging x={0} z={-1.5} y={5.6} half={2.6}>
         <LightPanel
           id="brand-hang"
@@ -121,60 +112,9 @@ function Signage() {
 function Reception() {
   return (
     <group>
-      {/* counter */}
-      <mesh position={[-10.5, 0.55, 6.6]} material={bordoMat()} castShadow receiveShadow>
-        <boxGeometry args={[4.2, 1.1, 0.7]} />
-      </mesh>
-      <mesh position={[-8.6, 0.55, 7.25]} material={bordoMat()} castShadow receiveShadow>
-        <boxGeometry args={[0.6, 1.1, 2]} />
-      </mesh>
-      <mesh position={[-10.5, 1.13, 6.6]} material={whiteMat()} castShadow>
-        <boxGeometry args={[4.4, 0.06, 0.9]} />
-      </mesh>
-      <mesh position={[-8.6, 1.13, 7.25]} material={whiteMat()} castShadow>
-        <boxGeometry args={[0.8, 0.06, 2.2]} />
-      </mesh>
-      <mesh position={[-10.5, 0.98, 6.96]} material={mintGlowMat()}>
-        <boxGeometry args={[4.2, 0.03, 0.02]} />
-      </mesh>
-      <mesh position={[-8.29, 0.98, 7.25]} material={mintGlowMat()}>
-        <boxGeometry args={[0.02, 0.03, 2]} />
-      </mesh>
-      <LightPanel id="counter-logo" lines={['ORIFAEL', 'Distribuidora']} style="brand" size={[1.8, 0.45]} position={[-10.5, 0.62, 6.97]} frame={false} glow={1.2} res={[1024, 256]} />
-      {[-11.4, -9.6].map((x) => (
-        <group key={x} position={[x, 1.16, 6.45]}>
-          <mesh position-y={0.24} material={darkSteelMat()}>
-            <boxGeometry args={[0.55, 0.34, 0.03]} />
-          </mesh>
-          <mesh position={[0, 0.24, 0.017]}>
-            <planeGeometry args={[0.5, 0.3]} />
-            <meshStandardMaterial color="#0c2b2b" emissive="#A8E6CF" emissiveIntensity={0.25} />
-          </mesh>
-          <mesh position-y={0.04} material={darkSteelMat()}>
-            <boxGeometry args={[0.06, 0.08, 0.06]} />
-          </mesh>
-        </group>
-      ))}
-      {/* back partition with brand */}
       <mesh position={[-11.75, 1.6, 5.25]} material={darkSteelMat()} castShadow receiveShadow>
         <boxGeometry args={[6.3, 3.2, 0.2]} />
       </mesh>
-      <LightPanel id="recep-wall" lines={['DISTRIBUIDORA ORIFAEL', 'Atención comercial · Lun a Sáb']} style="brand" size={[4.6, 1.15]} position={[-11.75, 2.1, 5.36]} frame={false} glow={1.3} res={[1600, 400]} />
-      {/* glass office */}
-      <group position={[-13.4, 0, 8.4]}>
-        <mesh position={[0, 1.4, -0.95]} material={glassMat()}>
-          <boxGeometry args={[2.8, 2.8, 0.04]} />
-        </mesh>
-        <mesh position={[1.4, 1.4, 0]} material={glassMat()}>
-          <boxGeometry args={[0.04, 2.8, 1.9]} />
-        </mesh>
-        <mesh position={[0, 2.82, 0]} material={darkSteelMat()}>
-          <boxGeometry args={[2.85, 0.05, 1.95]} />
-        </mesh>
-        <mesh position={[0, 0.75, 0.2]} material={whiteMat()} castShadow>
-          <boxGeometry args={[1.4, 0.05, 0.7]} />
-        </mesh>
-      </group>
       {/* bench + plant */}
       <mesh position={[-6.6, 0.25, 9.2]} material={darkSteelMat()} castShadow>
         <boxGeometry args={[1.8, 0.45, 0.5]} />
@@ -392,7 +332,7 @@ function Exterior() {
         </mesh>
         <LightPanel id="street" lines={['Gdor. Tello', '437 · S. S. de Jujuy']} style="street" size={[1.5, 0.42]} position={[0, 3.0, 0]} glow={0.4} twoSided res={[768, 215]} />
       </group>
-      <group position={[2.9, 3.6, HALF_D + 0.3]}>
+      <group position={[3.6, 3.0, HALF_D + 0.35]}>
         <LightPanel id="numero" lines={['437', 'Gdor. Tello']} style="street" size={[0.7, 0.35]} position={[0, 0, 0]} glow={0.5} res={[512, 256]} />
       </group>
       {trees.map((x, i) => (

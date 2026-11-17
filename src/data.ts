@@ -54,12 +54,28 @@ export const WAYPOINTS: Waypoint[] = [
   { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Frente comercial y portón principal', pos: [0, EYE, 17], look: [0, 2.8, 4] },
   { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Racks selectivos de 3 niveles', pos: [0, EYE, 5.8], look: [0, 1.9, -6] },
   { id: 3, title: 'Estructura de Cubierta (Cabriadas)', subtitle: 'Plataforma elevadora a 5,8 m', pos: [-9.5, 5.8, 7.5], look: [2, 7.2, -2.5] },
-  { id: 4, title: 'Zona de Despacho', subtitle: 'Muelles de carga y andén', pos: [0, EYE, -3.2], look: [0, 1.5, -11] },
+  { id: 4, title: 'Zona de Despacho', subtitle: 'Muelles, pick-up y pallets de bebidas', pos: [-0.6, EYE, -6.4], look: [-9.5, 1.3, -8.4] },
 ]
 
 export const ORBIT_VIEW = { pos: [30, 24, 31] as V3, target: [0, 2.5, 0] as V3 }
 
+export type PhotoKey = 'fachada' | 'mostrador' | 'galpon_interno' | 'estanterias'
+
+export const PHOTOS: Record<PhotoKey, { file: string; short: string; caption: string }> = {
+  fachada: { file: 'fachada.jpg', short: 'Fachada · Gdor. Tello 437', caption: 'Fachada y acceso con portón metálico y cartel comercial' },
+  mostrador: { file: 'mostrador.jpg', short: 'Mostrador de atención', caption: 'Mostrador, revestimiento de madera, cielorraso con tragaluz y carteles de ofertas' },
+  galpon_interno: { file: 'galpon_interno.jpg', short: 'Galpón de carga', caption: 'Ladrillo visto, estructura de H°A° a la vista y piso de cemento alisado' },
+  estanterias: { file: 'estanterias.jpg', short: 'Atención y estanterías', caption: 'Mampara de atención y estanterías blancas con artículos de limpieza' },
+}
+export const PHOTO_KEYS = Object.keys(PHOTOS) as PhotoKey[]
+
+export const PICKUP = { x: -9.6, z: -7.9, rotY: 0 }
+export const STAIRS = { x0: 13.6, x1: 14.85, zBottom: -3.4, zTop: -8.3, h: 3.4, landing: { x0: 12.0, x1: 14.85, z0: -10, z1: -8.3 } }
+export const BEV_PALLETS: [number, number][] = [[10.6, -7.0], [10.6, -8.6], [12.2, -6.8], [-4.4, -9.15], [-3.0, -9.15]]
+
 export type Hotspot = {
+  photo: PhotoKey
+  twin: string
   id: string
   label: string
   zone: string
@@ -72,6 +88,8 @@ export type Hotspot = {
 
 export const HOTSPOTS: Hotspot[] = [
   {
+    photo: 'mostrador',
+    twin: 'Cielorraso con tragaluz relevado en el sector comercial; en el galpón, 7 cabriadas de acero de 20 m de luz.',
     id: 'A',
     label: 'Techo',
     zone: 'Cubierta',
@@ -82,6 +100,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [-6.5, 5.6, 4.5], look: [0, 7.15, -2.2] },
   },
   {
+    photo: 'estanterias',
+    twin: 'Estanterías blancas de limpieza modeladas en el sector comercial; racks de 3 niveles en los pasillos.',
     id: 'B',
     label: 'Pasillo 1',
     zone: 'Stock',
@@ -92,6 +112,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [-6, EYE, 4.6], look: [-6, 2.2, -0.5] },
   },
   {
+    photo: 'galpon_interno',
+    twin: 'Piso de cemento alisado, ladrillo visto y columnas/vigas de H°A° replicados del galpón real.',
     id: 'C',
     label: 'Piso',
     zone: 'Solado',
@@ -102,6 +124,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [6.5, EYE, 9.2], look: [3.2, 0.3, 7.2] },
   },
   {
+    photo: 'fachada',
+    twin: 'Cartel real ORIFAEL, portón metálico y revoque de fachada sobre Gdor. Tello 437.',
     id: 'D',
     label: 'Entrada',
     zone: 'Acceso',
@@ -125,8 +149,13 @@ export const COLLIDERS: Box2[] = [
   box(-15.3, -14.85, -10.4, 10.4),
   box(14.85, 15.3, -10.4, 10.4),
   ...RACK_ROWS.map((c) => box(c - RACK_HALF_DEPTH - 0.1, c + RACK_HALF_DEPTH + 0.1, RACK_Z0 - 0.15, RACK_Z1 + 0.15, RACK_H + 0.2)),
-  box(-12.7, -8.3, 6.1, 7.1, 1.2),
-  box(-8.95, -8.3, 6.1, 8.3, 1.2),
+  box(-12.7, -8.2, 6.2, 7.0, 1.2),
+  box(-14.9, -14.3, 5.9, 9.7, 2.1),
+  box(-13.4, -11.0, 9.25, 9.75, 2.1),
+  box(PICKUP.x - 2.75, PICKUP.x + 2.75, PICKUP.z - 1.0, PICKUP.z + 1.0, 2.4),
+  box(STAIRS.x0 - 0.1, 14.9, STAIRS.zTop, STAIRS.zBottom + 0.1, STAIRS.h + 0.2),
+  box(12.0, 12.45, -8.75, -8.3, STAIRS.h),
+  ...BEV_PALLETS.map(([x, z]) => box(x - 0.65, x + 0.65, z - 0.55, z + 0.55, 1.7)),
   box(-14.9, -8.6, 5.05, 5.45, 3.2),
   box(-1.4, 1.4, -23.5, -10.45, 4.2),
   box(2.9, 5.1, -8.4, -6.4, 2.4),
@@ -145,7 +174,11 @@ export function zoneAt(x: number, z: number): string {
     if (x > 7) return 'Zona de Picking'
     return 'Hall de acceso'
   }
-  if (z < RACK_Z0 - 0.5) return 'Zona de Despacho / Carga'
+  if (z < RACK_Z0 - 0.5) {
+    if (x > 11.8) return 'Escalera / Entrepiso'
+    if (x < -6.5) return 'Carga vehicular · Pick-up'
+    return 'Zona de Despacho / Carga'
+  }
   if (x > -7.8 && x < -4.2) return 'Pasillo 1'
   if (x > -1.8 && x < 1.8) return 'Pasillo 2 · Central'
   if (x > 4.2 && x < 7.8) return 'Pasillo 3'
