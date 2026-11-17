@@ -1,3 +1,4 @@
+import { LOW_POWER } from '../device'
 import { ContactShadows, Environment } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
@@ -97,7 +98,7 @@ function Lights() {
         intensity={2.6}
         color="#f3f6fa"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={LOW_POWER ? [1024, 1024] : [2048, 2048]}
         shadow-camera-left={-26}
         shadow-camera-right={26}
         shadow-camera-top={26}
@@ -161,8 +162,8 @@ export function Experience() {
       <Lights />
       <Shell />
       <RealSite />
-      <ContactShadows position={[0, 0.012, 0]} scale={[2 * IN_X, 2 * IN_Z]} resolution={1024} far={1.6} blur={2.4} opacity={0.55} frames={2} color="#1b1814" />
-      <ContactShadows position={[0, SIDEWALK.curb + 0.004, (SIDEWALK.z0 + SIDEWALK.z1) / 2]} scale={[16, 5]} resolution={512} far={1.6} blur={2} opacity={0.5} frames={2} color="#1b1814" />
+      {!LOW_POWER && <ContactShadows position={[0, 0.012, 0]} scale={[2 * IN_X, 2 * IN_Z]} resolution={1024} far={1.6} blur={2.4} opacity={0.55} frames={2} color="#1b1814" />}
+      {!LOW_POWER && <ContactShadows position={[0, SIDEWALK.curb + 0.004, (SIDEWALK.z0 + SIDEWALK.z1) / 2]} scale={[16, 5]} resolution={512} far={1.6} blur={2} opacity={0.5} frames={2} color="#1b1814" />}
       <Hotspots />
       <Dimensions />
       <Navigation />

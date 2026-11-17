@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { HOTSPOTS, ORBIT_VIEW, WAYPOINTS, EYE, type V3 } from './data'
+import { LOW_POWER } from './device'
 
 export type Mode = 'walk' | 'orbit'
 
@@ -54,7 +55,7 @@ export const useStore = create<State>((set, get) => ({
   mode: 'walk',
   bim: false,
   cutRoof: false,
-  reflections: true,
+  reflections: !LOW_POWER,
   clay: false,
   cadLabels: false,
   gatesClosed: false,
@@ -63,7 +64,7 @@ export const useStore = create<State>((set, get) => ({
     if (document.pointerLockElement) document.exitPointerLock()
     set({ viewer: { i, split } })
   },
-  ao: true,
+  ao: !LOW_POWER,
   hotspot: null,
   aimHotspot: null,
   flight: null,
