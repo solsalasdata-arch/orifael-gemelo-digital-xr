@@ -4,11 +4,13 @@ import { XROrigin, useXR, useXRControllerLocomotion } from '@react-three/xr'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
-import { COLLIDERS, EYE, EYE_MAX, EYE_MIN, ORBIT_VIEW, WAYPOINTS } from '../data'
+import { COLLIDERS, EYE, EYE_MAX, EYE_MIN, GATE_BLOCKS, HALF_D, HALF_W, ORBIT_VIEW, WAYPOINTS } from '../data'
 import { useStore } from '../store'
 
 const RADIUS = 0.32
 const keys = new Set<string>()
+const WITH_GATES = [...COLLIDERS, ...GATE_BLOCKS]
+const colliders = () => (useStore.getState().gatesClosed ? WITH_GATES : COLLIDERS)
 
 function isTyping(e: KeyboardEvent) {
   const t = e.target as HTMLElement | null
@@ -17,7 +19,7 @@ function isTyping(e: KeyboardEvent) {
 
 export function resolveCollisions(p: THREE.Vector3, feetY: number) {
   for (let iter = 0; iter < 3; iter++) {
-    for (const b of COLLIDERS) {
+    for (const b of colliders()) {
       if (feetY > b.h) continue
       const cx = Math.max(b.x0, Math.min(p.x, b.x1))
       const cz = Math.max(b.z0, Math.min(p.z, b.z1))
@@ -46,7 +48,7 @@ export function resolveCollisions(p: THREE.Vector3, feetY: number) {
 }
 
 export function isBlocked(x: number, z: number) {
-  return COLLIDERS.some((b) => b.h > 1 && x > b.x0 - RADIUS && x < b.x1 + RADIUS && z > b.z0 - RADIUS && z < b.z1 + RADIUS)
+  return colliders().some((b) => b.h > 1 && x > b.x0 - RADIUS && x < b.x1 + RADIUS && z > b.z0 - RADIUS && z < b.z1 + RADIUS)
 }
 
 function useKeyboard() {
@@ -62,6 +64,9 @@ function useKeyboard() {
       if (e.code === 'KeyO') s.goMode(s.mode === 'orbit' ? 'walk' : 'orbit')
       if (e.code === 'KeyH') s.toggleHud()
       if (e.code === 'KeyR') s.set({ cutRoof: !s.cutRoof })
+      if (e.code === 'KeyL') s.set({ cadLabels: !s.cadLabels })
+      if (e.code === 'KeyG') s.set({ gatesClosed: !s.gatesClosed })
+      if (e.code === 'Escape' && s.viewer) s.set({ viewer: null })
     }
     const up = (e: KeyboardEvent) => keys.delete(e.code)
     const blur = () => keys.clear()
@@ -227,7 +232,7 @@ function CameraRig() {
       const to = new THREE.Vector3(...f.pos)
       const m = new THREE.Matrix4().lookAt(to, new THREE.Vector3(...f.look), new THREE.Vector3(0, 1, 0))
       const dist = from.distanceTo(to)
-      const inside = Math.abs(from.x) < 15 && Math.abs(from.z) < 10 && Math.abs(to.x) < 15 && Math.abs(to.z) < 10
+      const inside = Math.abs(from.x) < HALF_W && Math.abs(from.z) < HALF_D && Math.abs(to.x) < HALF_W && Math.abs(to.z) < HALF_D
       st.current = {
         id: f.id,
         from,
@@ -274,7 +279,7 @@ function XRRig() {
   const start = useMemo(() => {
     const p = useStore.getState().player
     const yaw = Math.atan2(-p.dx, -p.dz)
-    const inside = Math.abs(p.x) < 30 && Math.abs(p.z) < 30
+    const inside = Math.abs(p.x) < 20 && Math.abs(p.z) < 30
     return { pos: (inside ? [p.x, 0, p.z] : [0, 0, WAYPOINTS[1].pos[2]]) as [number, number, number], yaw: inside ? yaw : 0 }
   }, [])
   useXRControllerLocomotion(origin, { speed: 2.2 }, { type: 'snap', degrees: 45 })
@@ -336,4 +341,4 @@ export function Navigation() {
   )
 }
 
-export const INITIAL_CAMERA = { pos: [0, EYE, 30] as [number, number, number], look: WAYPOINTS[0].look }
+export const INITIAL_CAMERA = { pos: [-10, 9, 46] as [number, number, number], look: WAYPOINTS[0].look }

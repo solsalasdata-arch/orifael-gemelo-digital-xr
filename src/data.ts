@@ -1,65 +1,72 @@
 export type V3 = [number, number, number]
 
-export const W = 30
-export const D = 20
+/** Nave real: frente 13,0 m sobre Gdor. Tello (x) × 30 m de fondo (z). Frente en z = +HALF_D. */
+export const W = 13
+export const D = 30
 export const HALF_W = W / 2
 export const HALF_D = D / 2
-export const BOTTOM_CHORD = 6.5
-export const EAVE = 6.9
-export const RIDGE = 8
 export const WALL_T = 0.25
+export const IN_X = HALF_W - WALL_T
+export const IN_Z = HALF_D - WALL_T
+export const SLAB_Y = 4.6
+export const SLAB_T = 0.2
+export const BEAM_H = 0.5
+export const FASCIA = { y0: 4.45, y1: 5.25, overhang: 1.0, side: 0.8 }
+export const SIDEWALK = { z0: HALF_D, z1: HALF_D + 5, curb: 0.14 }
+export const STREET = { z0: HALF_D + 5, z1: HALF_D + 13 }
 
-export const topY = (z: number) => EAVE + (RIDGE - EAVE) * (1 - Math.abs(z) / HALF_D)
-export const ROOF_ANGLE = Math.atan((RIDGE - EAVE) / HALF_D)
+/** Frente de izquierda a derecha (mirando desde la calle). */
+export const FRONT = {
+  door: { x: -5.75, w: 0.9, h: 2.05 },
+  vent: { x: -5.75, y: 3.75, s: 0.55 },
+  colWide: { x0: -3.0, x1: -2.4 },
+  gate1: { x0: -2.4, x1: 1.8, h: 4.0 },
+  colMid: { x0: 1.8, x1: 2.3 },
+  gate2: { x0: 2.3, x1: 6.1, h: 4.0, grill: 1.25, door: { w: 0.8, h: 1.7 } },
+  colRight: { x0: 6.1, x1: HALF_W },
+}
+export const GATE1_X = (FRONT.gate1.x0 + FRONT.gate1.x1) / 2
+export const GATE2_X = (FRONT.gate2.x0 + FRONT.gate2.x1) / 2
+export const REBAR_X = [-6.25, -4.55, -2.7, 2.05, 4.2, 6.3]
 
-export const TRUSS_X = [-15, -10, -5, 0, 5, 10, 15]
-export const BAY_CENTERS = [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5]
-export const SKYLIGHT_BAYS = [1, 2, 3, 4]
+export const COL_ROW_X = -4.85
+export const COL_Z = [10, 5, 0, -5, -10]
 
-export const RACK_ROWS: number[] = []
-export const RACK_Z0 = -5.5
-export const RACK_BAYS = 4
-export const RACK_BAY_LEN = 2.5
-export const RACK_Z1 = RACK_Z0 + RACK_BAYS * RACK_BAY_LEN
-export const RACK_HALF_DEPTH = 1.2
-export const RACK_H = 4.6
-export const RACK_BEAMS = [1.45, 3.0, 4.5]
-export const RACK_LEVELS = [0, 1.51, 3.06]
+export const OFFICE = { x0: -IN_X, x1: -3.0, z0: 9.9, z1: IN_Z, h: 2.8, doorZ: [10.7, 11.7] as [number, number] }
+export const SALON = { x0: 2.05, x1: IN_X, z0: 8.4, z1: IN_Z, h: 3.0, openX: [2.4, 3.6] as [number, number] }
+export const SHELF_RUN = { x0: -IN_X, x1: -5.35, z0: -8.6, z1: 9.6, h: 2.6 }
+export const MEZZ = { x0: -IN_X, x1: -1.6, z0: -IN_Z, z1: -10.6, y: 2.35 }
+export const STAIRS = { x0: -IN_X, x1: -5.15, zBottom: -5.6, zTop: -10.6, h: MEZZ.y }
+export const PICKUP = { x: 3.6, z: -11.2, rotY: Math.PI / 2 }
+export const STACKER = { x: -0.6, z: -2.2, rotY: 0 }
 
-export const ENTRANCE = { x: -6.5, w: 6, h: 4.6 }
-export const GATE_R = { x: 4.5, w: 4.2, h: 3.8, door: 0.9 }
-export const WALL_SHELVES: [number, number][] = [[-9.5, -5.35], [-4.65, -0.35], [0.35, 4.75]]
-export const DOCKS = [-8, 0, 8]
-export const DOCK_W = 3.6
-export const DOCK_H = 4.2
-export const OPEN_DOCK = 0
+export const BEV_PALLETS: [number, number][] = (() => {
+  const out: [number, number][] = []
+  for (let z = 7.2; z > -8.4; z -= 1.12) for (const x of [3.25, 4.55]) out.push([x, Math.round(z * 100) / 100])
+  return out
+})()
+export const CRATE_WALL = { x0: 5.3, x1: IN_X, z0: -8.4, z1: 7.8 }
 
 export const SUN_DIR: V3 = (() => {
-  const v = [-0.62, 0.72, 0.34]
+  const v = [-0.55, 0.74, 0.38]
   const l = Math.hypot(v[0], v[1], v[2])
   return [v[0] / l, v[1] / l, v[2] / l] as V3
 })()
 
 export const EYE = 1.7
 export const EYE_MIN = 0.9
-export const EYE_MAX = 6.2
+export const EYE_MAX = 4.2
 
-export type Waypoint = {
-  id: number
-  title: string
-  subtitle: string
-  pos: V3
-  look: V3
-}
+export type Waypoint = { id: number; title: string; subtitle: string; pos: V3; look: V3 }
 
 export const WAYPOINTS: Waypoint[] = [
-  { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Portón principal y portón con puerta de escape', pos: [-6.5, EYE, 12.4], look: [-6.5, 2.6, 0] },
-  { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Nave única · estanterías izq. · bebidas der.', pos: [-2, EYE, 7.4], look: [-1, 1.6, -8] },
-  { id: 3, title: 'Estructura de Cubierta (Cabriadas)', subtitle: 'Vista elevada a 5,8 m sobre el pasillo central', pos: [-1.5, 5.8, 3.0], look: [2, 7.2, -6] },
-  { id: 4, title: 'Zona de Despacho', subtitle: 'Muelles, utilitario y camión al fondo', pos: [-0.6, EYE, -6.4], look: [-0.6, 1.6, -16] },
+  { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Frente de 13 m · portón principal y portón con puerta de escape', pos: [0.2, EYE, 23.2], look: [0.2, 2.7, 14] },
+  { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Nave única · estanterías izq. · bebidas der.', pos: [-1.6, EYE, 9.2], look: [-0.8, 1.5, -10] },
+  { id: 3, title: 'Estructura de Cubierta (Losa y Vigas)', subtitle: 'Vista elevada a 3,6 m bajo la losa de H°A°', pos: [-1.4, 3.6, 6.5], look: [0.4, 4.6, -6] },
+  { id: 4, title: 'Zona de Despacho', subtitle: 'Apilador WIEBEL, entrepiso y utilitario al fondo', pos: [-1.0, EYE, -3.2], look: [1.4, 1.3, -14] },
 ]
 
-export const ORBIT_VIEW = { pos: [-5, 96, 36] as V3, target: [-5, 0, 4] as V3 }
+export const ORBIT_VIEW = { pos: [-26, 58, 58] as V3, target: [0, 0, 5] as V3 }
 export const ORBIT_FOV = 30
 export const WALK_FOV = 70
 
@@ -95,15 +102,26 @@ export const PHOTOS = {
   ofi_2: { file: 'ofi_2.jpg', zone: 'ofi', short: 'Oficina · muro', caption: 'Muro de la oficina en tablas de pallet' },
   ofi_3: { file: 'ofi_3.jpg', zone: 'ofi', short: 'Oficina · escritorio', caption: 'Escritorio de administración en la oficina' },
   ofi_4: { file: 'ofi_4.jpg', zone: 'ofi', short: 'Oficina · administración', caption: 'Puesto de administración y facturación' },
+  rel_3: { file: 'rel_3.jpg', zone: 'ext', short: 'Acceso con cartel ORIFAEL', caption: 'Carpeta "si" · Acceso al salón bajo el cartel ORIFAEL Mayorista y Minorista' },
+  rel_1: { file: 'rel_1.jpg', zone: 'sal', short: 'Mostrador (relevamiento previo)', caption: 'Carpeta "si" · Mostrador con balanza, carteles de ofertas y cielorraso de madera' },
+  rel_2: { file: 'rel_2.jpg', zone: 'sal', short: 'Atención y estanterías', caption: 'Carpeta "si" · Puesto de atención con mampara y estanterías de limpieza' },
+  rel_4: { file: 'rel_4.jpg', zone: 'gal', short: 'Depósito · losa y escalera', caption: 'Carpeta "si" · Depósito con losa y vigas de H°A°, ladrillo hueco y escalera al entrepiso' },
 } satisfies Record<string, { file: string; zone: Zone; short: string; caption: string }>
 export type PhotoKey = keyof typeof PHOTOS
 export const photoSrc = (k: PhotoKey) => `${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`
 export const thumbSrc = (k: PhotoKey) => `${import.meta.env.BASE_URL}textures/thumbs/${PHOTOS[k].file}`
 export const PHOTO_KEYS = Object.keys(PHOTOS) as PhotoKey[]
 
-export const PICKUP = { x: -9.6, z: -7.9, rotY: 0 }
-export const STAIRS = { x0: 13.6, x1: 14.85, zBottom: -3.4, zTop: -8.3, h: 3.4, landing: { x0: 12.0, x1: 14.85, z0: -10, z1: -8.3 } }
-export const BEV_PALLETS: [number, number][] = [[10.6, -7.0], [10.6, -8.6], [-4.4, -9.15], [-3.0, -9.15], [7.2, -4.4], [7.2, -3.25], [7.2, -2.1], [7.2, -0.95], [7.2, 0.2], [7.2, 1.35], [7.2, 2.5], [7.2, 3.65], [8.55, -4.4], [8.55, -3.25], [8.55, -2.1], [8.55, -0.95], [8.55, 0.2], [8.55, 1.35], [8.55, 2.5], [8.55, 3.65], [11.2, -4.4], [11.2, -3.25], [11.2, -2.1], [11.2, -0.95], [11.2, 0.2], [11.2, 1.35], [11.2, 2.5], [11.2, 3.65], [12.55, -4.4], [12.55, -3.25], [12.55, -2.1], [12.55, -0.95], [12.55, 0.2], [12.55, 1.35], [12.55, 2.5], [12.55, 3.65]]
+export const VIDEO = {
+  src: `${import.meta.env.BASE_URL}media/pasillo_operativo.mp4`,
+  poster: `${import.meta.env.BASE_URL}media/pasillo_operativo.jpg`,
+  title: 'Video real · Pasillo operativo con apilador WIEBEL',
+  caption: 'Recorrido real del pasillo central: apilador eléctrico WIEBEL con cajones de bebidas hacia el despacho. Rostro de menor difuminado · sin audio.',
+}
+
+export type Media = { kind: 'video' } | { kind: 'photo'; k: PhotoKey }
+export const MEDIA: Media[] = [{ kind: 'video' }, ...PHOTO_KEYS.map((k) => ({ kind: 'photo' as const, k }))]
+export const mediaIndex = (k: PhotoKey) => 1 + PHOTO_KEYS.indexOf(k)
 
 export type Hotspot = {
   photo: PhotoKey
@@ -121,113 +139,111 @@ export type Hotspot = {
 export const HOTSPOTS: Hotspot[] = [
   {
     photo: 'gal_2',
-    twin: 'En el depósito real: losa y vigas de H°A° con columnas a la vista; en el gemelo, 7 cabriadas de acero de 20 m de luz.',
+    twin: 'Cubierta real: losa plana de hormigón armado con vigas y columnas a la vista; el gemelo la reproduce a 4,60 m con vigas transversales cada 5 m.',
     id: 'A',
     label: 'Techo',
     zone: 'Cubierta',
-    title: 'Estructura Metálica',
-    body: 'Cabriadas reticuladas de acero - Luz libre 20m',
-    pos: [0, 7.15, -2.2],
-    details: [['Cabriadas', '7 u. · cada 5 m'], ['Altura cumbrera', '8,0 m'], ['Pendiente', '11 %']],
-    view: { pos: [-6.5, 5.6, 4.5], look: [0, 7.15, -2.2] },
+    title: 'Estructura de cubierta',
+    body: 'Losa plana de H°A° con vigas a la vista · luz libre 12,5 m',
+    pos: [0.4, 4.05, 0],
+    details: [['Cubierta', 'Losa plana H°A° · e = 20 cm'], ['Altura libre', '4,60 m'], ['Vigas', '5 u. transversales · c/ 5 m'], ['Columnas', 'H°A° con zócalo negro']],
+    view: { pos: [-1.4, 2.4, 5.2], look: [0.4, 4.2, 0] },
   },
   {
     photo: 'gal_1',
-    twin: 'Estanterías de madera a la izquierda y estibas de pallets de bebidas a la derecha del pasillo central, como en el depósito relevado.',
+    twin: 'Estanterías de madera y racks contra la pared izquierda; pilas de pallets con cajones Quilmes y Coca-Cola a la derecha del pasillo central.',
     id: 'B',
     label: 'Stock',
     zone: 'Stock',
     title: 'Capacidad volumétrica',
     body: 'Capacidad volumétrica: 420 m³ de almacenamiento optimizado',
-    pos: [-13.4, 2.5, -2.5],
-    details: [['Estanterías madera', '3 tramos · 13 m · a pared'], ['Pallets de bebidas', '32 · doble estiba'], ['Nave', 'Única · 30 × 20 m']],
-    view: { pos: [-9.8, EYE, 1.2], look: [-13.4, 2.0, -2.5] },
+    pos: [-5.6, 2.9, 1.5],
+    details: [['Estanterías', '18 m lineales · a pared izq.'], ['Pallets de bebidas', '28 · doble estiba'], ['Nave', 'Única · 13 × 30 m']],
+    view: { pos: [0.9, 2.1, 6.8], look: [-5.6, 1.6, 0.0] },
   },
   {
-    photo: 'sal_2',
-    twin: 'Piso de cemento alisado; heladeras, freezers, góndolas y cielorraso de machimbre del salón.',
+    photo: 'gal_3',
+    twin: 'Piso de cemento alisado continuo en toda la nave, con juntas aserradas y tránsito del apilador eléctrico.',
     id: 'C',
     label: 'Piso',
     zone: 'Solado',
     title: 'Losa industrial',
     body: 'Losa de Hormigón Armado H25 de alta resistencia industrial',
-    pos: [3.2, 0.45, 7.2],
-    details: [['Superficie', '600 m²'], ['Terminación', 'Pulido + endurecedor'], ['Juntas', 'Aserradas c/ 5 m']],
-    view: { pos: [6.5, EYE, 9.2], look: [3.2, 0.3, 7.2] },
+    pos: [0.6, 0.35, 3.0],
+    details: [['Superficie', '390 m²'], ['Terminación', 'Cemento alisado'], ['Juntas', 'Aserradas c/ 5 m']],
+    view: { pos: [-1.6, EYE, 6.6], look: [0.6, 0.3, 3.0] },
   },
   {
     photo: 'ext_4',
-    twin: 'Cartel ORIFAEL, portón vehicular, alero iluminado, afiches y pizarras de ofertas en el ingreso.',
+    twin: 'Frente de 13 m: puerta peatonal, portón principal 4,20 × 4,00 m y segundo portón 3,80 m con reja superior y puerta de escape, bajo losa con alero.',
     id: 'D',
     label: 'Entrada',
     zone: 'Acceso',
     title: 'Acceso Logístico',
     body: 'Acceso Logístico - Gdor. Tello 437, S.S. de Jujuy',
-    pos: [-5, 3.2, 9.6],
-    details: [['Portones', '6,0 × 4,6 + 4,2 × 3,8 m'], ['Vereda', 'Gdor. Tello'], ['Ciudad', 'S. S. de Jujuy']],
-    view: { pos: [-6, EYE, 13.4], look: [-5, 3.0, 9.6] },
+    pos: [-0.3, 4.75, 16.2],
+    details: [['Portón principal', '4,20 × 4,00 m'], ['Portón 2', '3,80 m · reja + escape'], ['Playón / vereda', '5,0 m'], ['Ciudad', 'S. S. de Jujuy']],
+    view: { pos: [-0.3, EYE, 22.4], look: [-0.3, 3.4, 15] },
   },
 ]
 
 export type Box2 = { x0: number; x1: number; z0: number; z1: number; h: number }
 
 const box = (x0: number, x1: number, z0: number, z1: number, h = 8): Box2 => ({ x0, x1, z0, z1, h })
+const FZ0 = IN_Z
+const FZ1 = HALF_D + 0.05
+
+export const GATE_BLOCKS: Box2[] = [box(FRONT.gate1.x0, FRONT.gate1.x1, FZ0, FZ1), box(FRONT.gate2.x0, FRONT.gate2.x1, FZ0, FZ1)]
 
 export const COLLIDERS: Box2[] = [
-  box(-15.3, ENTRANCE.x - ENTRANCE.w / 2, 9.85, 10.4),
-  box(ENTRANCE.x + ENTRANCE.w / 2, GATE_R.x - GATE_R.door / 2, 9.85, 10.4),
-  box(GATE_R.x + GATE_R.door / 2, 15.3, 9.85, 10.4),
-  ...WALL_SHELVES.map(([z0, z1]) => box(-14.9, -14.0, z0, z1, 2.2)),
-  box(-15.3, OPEN_DOCK - DOCK_W / 2, -10.4, -9.85),
-  box(OPEN_DOCK + DOCK_W / 2, 15.3, -10.4, -9.85),
-  box(-15.3, -14.85, -10.4, 10.4),
-  box(14.85, 15.3, -10.4, 10.4),
-  ...RACK_ROWS.map((c) => box(c - RACK_HALF_DEPTH - 0.1, c + RACK_HALF_DEPTH + 0.1, RACK_Z0 - 0.15, RACK_Z1 + 0.15, RACK_H + 0.2)),
-  box(-12.7, -8.2, 6.2, 7.0, 1.2),
-  box(-14.9, -14.3, 5.9, 9.7, 2.1),
-  box(-13.4, -11.0, 9.25, 9.75, 2.1),
-  box(PICKUP.x - 2.95, PICKUP.x + 3.4, PICKUP.z - 1.0, PICKUP.z + 1.0, 2.4),
-  box(STAIRS.x0 - 0.1, 14.9, STAIRS.zTop, STAIRS.zBottom + 0.1, STAIRS.h + 0.2),
-  box(12.0, 12.45, -8.75, -8.3, STAIRS.h),
-  ...BEV_PALLETS.map(([x, z]) => box(x - 0.65, x + 0.65, z - 0.55, z + 0.55, 1.7)),
-  box(-14.9, -8.6, 5.05, 5.45, 3.2),
-  box(-1.4, 2.0, 9.1, 9.95, 2.1),
-  box(2.2, 5.9, -9.85, -8.45, 2.0),
-  box(-13.35, -12.65, 6.4, 7.1, 1.6),
-  box(-1.4, 1.4, -23.5, -10.45, 4.2),
-  box(2.9, 5.1, -8.4, -6.4, 2.4),
-  box(10.2, 13.8, 6.4, 8.2, 1.0),
+  box(-HALF_W - 0.1, FRONT.colWide.x1, FZ0, FZ1),
+  box(FRONT.colMid.x0, FRONT.colMid.x1, FZ0, FZ1),
+  box(FRONT.colRight.x0, HALF_W + 0.1, FZ0, FZ1),
+  box(-HALF_W - 0.1, -IN_X, -HALF_D, HALF_D),
+  box(IN_X, HALF_W + 0.1, -HALF_D, HALF_D),
+  box(-HALF_W, HALF_W, -HALF_D - 0.1, -IN_Z),
+  box(-17.5, -HALF_W - 0.1, 2, HALF_D),
+  box(HALF_W + 0.1, 17.5, 2, HALF_D),
+  box(OFFICE.x0, OFFICE.x1 + 0.1, OFFICE.z0 - 0.1, OFFICE.z0 + 0.1, OFFICE.h),
+  box(OFFICE.x1 - 0.1, OFFICE.x1 + 0.1, OFFICE.z0, OFFICE.doorZ[0], OFFICE.h),
+  box(OFFICE.x1 - 0.1, OFFICE.x1 + 0.1, OFFICE.doorZ[1], OFFICE.z1, OFFICE.h),
+  box(-IN_X, -5.3, 12.6, 14.2, 1.0),
+  box(SALON.x0 - 0.1, SALON.x0 + 0.1, SALON.z0, SALON.z1, SALON.h),
+  box(SALON.x0, SALON.openX[0], SALON.z0 - 0.1, SALON.z0 + 0.1, SALON.h),
+  box(SALON.openX[1], SALON.x1, SALON.z0 - 0.1, SALON.z0 + 0.1, SALON.h),
+  box(5.45, IN_X, 9.0, 14.0, 2.0),
+  box(SALON.x0, 2.85, 9.0, 14.2, 2.0),
+  box(3.6, SALON.x1, 8.5, 9.5, 1.2),
+  box(SHELF_RUN.x0, SHELF_RUN.x1, SHELF_RUN.z0, SHELF_RUN.z1, SHELF_RUN.h),
+  ...COL_Z.map((z) => box(COL_ROW_X - 0.2, COL_ROW_X + 0.2, z - 0.2, z + 0.2)),
+  ...BEV_PALLETS.map(([x, z]) => box(x - 0.62, x + 0.62, z - 0.52, z + 0.52, 2.6)),
+  box(CRATE_WALL.x0, CRATE_WALL.x1, CRATE_WALL.z0, CRATE_WALL.z1, 2.2),
+  box(STAIRS.x0, STAIRS.x1 + 0.05, STAIRS.zTop, STAIRS.zBottom, STAIRS.h + 0.2),
+  box(MEZZ.x1 - 0.25, MEZZ.x1 + 0.05, MEZZ.z1 - 0.3, MEZZ.z1, MEZZ.y),
+  box(PICKUP.x - 1.0, PICKUP.x + 1.0, PICKUP.z - 3.35, PICKUP.z + 2.95, 2.4),
+  box(STACKER.x - 0.45, STACKER.x + 0.45, STACKER.z - 1.3, STACKER.z + 0.75, 2.4),
+  box(-1.8, 0.4, -12.6, -11.6, 1.0),
+  box(FRONT.gate2.x1 + 0.2, FRONT.gate2.x1 + 0.9, 15.3, 16.2, 1.4),
 ]
 
 export function zoneAt(x: number, z: number): string {
-  if (Math.abs(x) > HALF_W || Math.abs(z) > HALF_D) {
-    if (z > HALF_D && z < 13.2) return 'Vereda · Gdor. Tello 437'
-    if (z >= 13.2) return 'Calle Gdor. Tello'
-    if (z < -HALF_D) return 'Playa de maniobras'
-    return 'Exterior'
-  }
-  if (z > RACK_Z1 + 0.5) {
-    if (x < -8.2) return 'Box de atención / Mostrador'
-    if (x > 7) return 'Zona de Picking'
-    return 'Hall de acceso'
-  }
-  if (z < RACK_Z0 - 0.5) {
-    if (x > 11.8) return 'Escalera / Entrepiso'
-    if (x < -6.5) return 'Carga vehicular · Pick-up'
-    return 'Zona de Despacho / Carga'
-  }
-  if (x < -12.6) return 'Estanterías de madera'
-  if (x > 6.5) return 'Pallets de bebidas'
+  if (z > HALF_D) return z < SIDEWALK.z1 ? 'Playón / vereda · Gdor. Tello 437' : 'Calle Gdor. Tello'
+  if (Math.abs(x) > HALF_W || z < -HALF_D) return 'Exterior · linderos'
+  if (x < OFFICE.x1 && z > OFFICE.z0) return 'Box de madera · Oficina'
+  if (x > SALON.x0 && z > SALON.z0) return 'Salón de ventas · Mostrador'
+  if (z < -10.4) return x < MEZZ.x1 ? 'Entrepiso / Escalera' : 'Despacho · Vehículos'
+  if (x < -4.4) return 'Estanterías de madera'
+  if (x > 2.5) return 'Pallets de bebidas'
   return 'Nave central'
 }
 
 export const METRICS = [
-  { k: 'Superficie cubierta', v: '600 m²' },
-  { k: 'Volumen edificado', v: '4.350 m³' },
-  { k: 'Luz libre (cabriadas)', v: '20 m' },
-  { k: 'Altura cumbrera / alero', v: '8,0 / 6,9 m' },
-  { k: 'Volumen en racks', v: '420 m³' },
-  { k: 'Pallets de bebidas', v: '32 · doble estiba' },
-  { k: 'Nave', v: 'Única · 30 × 20 m' },
-  { k: 'Portones de frente', v: '2 enrollables' },
+  { k: 'Superficie cubierta', v: '390 m²' },
+  { k: 'Volumen edificado', v: '1.795 m³' },
+  { k: 'Frente / fondo', v: '13,0 × 30,0 m' },
+  { k: 'Altura libre bajo losa', v: '4,60 m' },
+  { k: 'Volumen de stock', v: '420 m³' },
+  { k: 'Pallets de bebidas', v: '28 · doble estiba' },
+  { k: 'Portones de frente', v: '4,20 + 3,80 m' },
+  { k: 'Playón / vereda', v: '5,0 m' },
 ]

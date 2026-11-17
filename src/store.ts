@@ -23,6 +23,10 @@ type State = {
   cutRoof: boolean
   reflections: boolean
   clay: boolean
+  cadLabels: boolean
+  gatesClosed: boolean
+  viewer: { i: number; split: boolean } | null
+  openViewer: (i: number, split?: boolean) => void
   ao: boolean
   hotspot: string | null
   aimHotspot: string | null
@@ -52,6 +56,13 @@ export const useStore = create<State>((set, get) => ({
   cutRoof: false,
   reflections: true,
   clay: false,
+  cadLabels: false,
+  gatesClosed: false,
+  viewer: null,
+  openViewer: (i, split = false) => {
+    if (document.pointerLockElement) document.exitPointerLock()
+    set({ viewer: { i, split } })
+  },
   ao: true,
   hotspot: null,
   aimHotspot: null,

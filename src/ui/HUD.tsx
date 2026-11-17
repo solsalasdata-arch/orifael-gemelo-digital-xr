@@ -1,9 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
-import { HOTSPOTS, PHOTOS, PHOTO_KEYS, ZONES, ZONE_HOTSPOT, photoSrc, thumbSrc, type Zone, PICKUP, STAIRS, BEV_PALLETS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE, GATE_R, WALL_SHELVES } from '../data'
+import {
+  BEV_PALLETS, CRATE_WALL, FRONT, GATE1_X, HALF_D, HOTSPOTS, MEDIA, MEZZ, METRICS, OFFICE, PHOTOS, PHOTO_KEYS, PICKUP, SALON, SHELF_RUN, SIDEWALK, STACKER, STAIRS, STREET, VIDEO, WAYPOINTS, ZONES, ZONE_HOTSPOT,
+  mediaIndex, thumbSrc, zoneAt, type Zone,
+} from '../data'
 import { isBlocked } from '../scene/Navigation'
 import { useStore } from '../store'
 import { xrStore } from '../xr'
+import { Viewer } from './Viewer'
 
 function Section({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) {
   return (
@@ -62,23 +65,21 @@ function Stats() {
   )
 }
 
-function PhotoGallery() {
-  const [idx, setIdx] = useState<number | null>(null)
+function MediaGallery() {
   const zones = Object.keys(ZONES) as Zone[]
-  const n = PHOTO_KEYS.length
-  const k = idx === null ? null : PHOTO_KEYS[idx]
-  useEffect(() => {
-    if (idx === null) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIdx(null)
-      if (e.key === 'ArrowRight') setIdx((i) => (i === null ? i : (i + 1) % n))
-      if (e.key === 'ArrowLeft') setIdx((i) => (i === null ? i : (i + n - 1) % n))
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [idx, n])
+  const open = (i: number) => useStore.getState().openViewer(i, false)
   return (
-    <Section title={`Relevamiento fotográfico real · ${n} vistas`}>
+    <Section title={`Visor de Relevamiento Real 1:1 · ${PHOTO_KEYS.length} fotos + video`}>
+      <button onClick={() => open(0)} className="group relative mb-2 block w-full overflow-hidden rounded-[3px] ring-1 ring-white/10 hover:ring-mint">
+        <img src={VIDEO.poster} alt={VIDEO.title} className="h-24 w-full object-cover opacity-80 transition group-hover:opacity-100" draggable={false} />
+        <span className="absolute inset-0 flex items-center gap-2 bg-gradient-to-r from-black/75 to-transparent px-3 text-left">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mint text-[#0d1a14]">▶</span>
+          <span>
+            <span className="block text-[12px] font-bold text-white">Video real · pasillo operativo</span>
+            <span className="block text-[10.5px] text-slate-300">Apilador WIEBEL · 27 s · sin audio</span>
+          </span>
+        </span>
+      </button>
       {zones.map((z) => (
         <div key={z} className="mb-1.5">
           <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
@@ -88,9 +89,9 @@ function PhotoGallery() {
             </button>
           </div>
           <div className="grid grid-cols-5 gap-1">
-            {PHOTO_KEYS.map((pk, i) =>
+            {PHOTO_KEYS.map((pk) =>
               PHOTOS[pk].zone !== z ? null : (
-                <button key={pk} title={PHOTOS[pk].caption} onClick={() => setIdx(i)} className="group overflow-hidden rounded-[2px] ring-1 ring-white/10 hover:ring-mint">
+                <button key={pk} title={PHOTOS[pk].caption} onClick={() => open(mediaIndex(pk))} className="group overflow-hidden rounded-[2px] ring-1 ring-white/10 hover:ring-mint">
                   <img src={thumbSrc(pk)} alt={PHOTOS[pk].short} loading="lazy" className="h-10 w-full object-cover transition group-hover:scale-105" draggable={false} />
                 </button>
               ),
@@ -98,29 +99,9 @@ function PhotoGallery() {
           </div>
         </div>
       ))}
-      <p className="text-[10.5px] text-slate-400">Clic para ampliar. Rostros y patentes difuminados.</p>
-      {k !== null &&
-        idx !== null &&
-        createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4" onClick={() => setIdx(null)}>
-            <div className="relative max-h-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
-              <img src={photoSrc(k)} alt={PHOTOS[k].caption} className="max-h-[80vh] w-auto rounded-[4px] ring-1 ring-white/20" draggable={false} />
-              <div className="mt-2 flex items-center justify-between gap-3 text-sm text-white">
-                <div>
-                  <span className="mr-2 rounded bg-bordo px-1.5 py-0.5 text-[11px] font-bold text-mint">{ZONES[PHOTOS[k].zone]}</span>
-                  {PHOTOS[k].caption}
-                </div>
-                <span className="font-mono text-xs text-slate-400">
-                  {idx + 1} / {n}
-                </span>
-              </div>
-              <button onClick={() => setIdx((idx + n - 1) % n)} className="absolute top-1/2 left-2 -translate-y-1/2 rounded-[3px] bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">‹</button>
-              <button onClick={() => setIdx((idx + 1) % n)} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-[3px] bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">›</button>
-              <button onClick={() => setIdx(null)} className="absolute top-2 right-2 rounded-[3px] bg-black/60 px-2.5 py-1 text-white hover:bg-black/80">✕</button>
-            </div>
-          </div>,
-          document.body,
-        )}
+      <p className="text-[10.5px] text-slate-400">
+        {MEDIA.length} medios de las carpetas «perspectivas» y «si». Clic para abrir en grande, ver a tamaño real 1:1 o lado a lado con el 3D. Rostros y patentes difuminados.
+      </p>
     </Section>
   )
 }
@@ -132,6 +113,8 @@ function Panel() {
   const reflections = useStore((s) => s.reflections)
   const clay = useStore((s) => s.clay)
   const ao = useStore((s) => s.ao)
+  const cad = useStore((s) => s.cadLabels)
+  const gatesClosed = useStore((s) => s.gatesClosed)
   const hotspot = useStore((s) => s.hotspot)
   const flight = useStore((s) => s.flight)
   const st = useStore.getState
@@ -155,7 +138,7 @@ function Panel() {
           </div>
         </div>
         <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-mint" /> Gdor. Tello 437 · San Salvador de Jujuy · Galpón 30 × 20 × 8 m
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-mint" /> Gdor. Tello 437 · San Salvador de Jujuy · Nave 13 × 30 m · losa a 4,60 m
         </div>
       </header>
 
@@ -202,8 +185,10 @@ function Panel() {
 
       <Section title="Inspección estructural">
         <div className="grid gap-1.5">
-          <Toggle on={bim} onClick={() => st().set({ bim: !bim })} label="Vista Estructural / Rayos X (BIM Wireframe)" hint="Paredes, columnas y cabriadas en cian" accent="bim" />
-          <Toggle on={cutRoof} onClick={() => st().set({ cutRoof: !cutRoof })} label="Corte de cubierta" hint="Oculta chapas para ver el interior" />
+          <Toggle on={cad} onClick={() => st().set({ cadLabels: !cad })} label={cad ? 'Ocultar Etiquetas CAD' : 'Mostrar Etiquetas CAD'} hint="Rótulos A·B·C·D y cotas · ocultas por defecto" accent="bim" />
+          <Toggle on={bim} onClick={() => st().set({ bim: !bim })} label="Vista Estructural / Rayos X (BIM Wireframe)" hint="Muros, columnas, vigas y losa en cian" accent="bim" />
+          <Toggle on={cutRoof} onClick={() => st().set({ cutRoof: !cutRoof })} label="Corte de cubierta" hint="Oculta la losa para ver el interior desde arriba" />
+          <Toggle on={gatesClosed} onClick={() => st().set({ gatesClosed: !gatesClosed })} label="Portones cerrados (como Street View)" hint="Apagado: abiertos en horario de atención" />
           <Toggle on={clay} onClick={() => st().set({ clay: !clay })} label="Clay Render (maqueta arquitectónica)" hint="Materiales neutros mate para leer volumen y estructura" />
           <Toggle on={ao} onClick={() => st().set({ ao: !ao })} label="Oclusión ambiental (AO)" hint="Sombras de contacto suaves · se apaga sola por debajo de 24 FPS" />
           <Toggle on={reflections} onClick={() => st().set({ reflections: !reflections })} label="Reflejos del piso pulido" hint="Desactivar en equipos lentos" />
@@ -228,7 +213,7 @@ function Panel() {
         </div>
       </Section>
 
-      <PhotoGallery />
+      <MediaGallery />
 
       <Section title="Métricas espaciales">
         <div className="grid grid-cols-2 gap-1.5">
@@ -261,6 +246,7 @@ function Panel() {
             .concat([
               ['1 – 4', 'Waypoints'],
               ['B · R · H', 'BIM · Corte · Panel'],
+              ['L · G', 'Etiquetas CAD · Portones'],
             ])
             .map(([k, v]) => (
               <li key={k} className="flex justify-between gap-2">
@@ -280,64 +266,70 @@ function Panel() {
 
 function MiniMap() {
   const p = useStore((s) => s.player)
+  const cad = useStore((s) => s.cadLabels)
   const zone = zoneAt(p.x, p.z)
   const ang = (Math.atan2(p.dx, -p.dz) * 180) / Math.PI
   const onClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    const svg = e.currentTarget
-    const pt = svg.createSVGPoint()
-    pt.x = e.clientX
-    pt.y = e.clientY
-    const m = svg.getScreenCTM()
+    const g = e.currentTarget.querySelector('g[data-plan]') as SVGGElement | null
+    const m = g?.getScreenCTM()
     if (!m) return
-    const q = pt.matrixTransform(m.inverse())
-    if (isBlocked(q.x, q.y)) return
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse())
+    if (isBlocked(pt.x, pt.y)) return
     const s = useStore.getState()
     const len = Math.hypot(p.dx, p.dz) || 1
-    s.flyTo({ label: `Ir a ${zoneAt(q.x, q.y)}`, pos: [q.x, s.eye, q.y], look: [q.x + (p.dx / len) * 5, s.eye, q.y + (p.dz / len) * 5], toMode: 'walk', eye: s.eye })
+    s.flyTo({ label: `Ir a ${zoneAt(pt.x, pt.y)}`, pos: [pt.x, s.eye, pt.y], look: [pt.x + (p.dx / len) * 5, s.eye, pt.y + (p.dz / len) * 5], toMode: 'walk', eye: s.eye })
   }
+  const r = (x0: number, x1: number, z0: number, z1: number, fill: string, op = 1) => <rect x={x0} y={z0} width={x1 - x0} height={z1 - z0} fill={fill} opacity={op} />
   return (
-    <div className="glass pointer-events-auto w-[230px] rounded-[4px] p-3">
+    <div className="glass pointer-events-auto w-[270px] rounded-[4px] p-3">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-mint/80">Planta · Navegación</span>
         <span className="text-[10px] text-slate-400">clic = ir</span>
       </div>
-      <svg viewBox="-17 -13 34 33" className="w-full cursor-crosshair rounded-[3px] bg-black/35" onClick={onClick}>
-        <rect x={-15} y={-10} width={30} height={20} fill="rgba(168,230,207,0.05)" stroke="#A8E6CF" strokeOpacity={0.7} strokeWidth={0.25} />
-        <rect x={ENTRANCE.x - ENTRANCE.w / 2} y={9.8} width={ENTRANCE.w} height={0.4} fill="#0b0f14" />
-        <rect x={GATE_R.x - GATE_R.w / 2} y={9.8} width={GATE_R.w} height={0.4} fill="#8e979f" />
-        {WALL_SHELVES.map(([z0, z1]) => (
-          <rect key={z0} x={-14.85} y={z0} width={0.75} height={z1 - z0} fill="#8a6644" opacity={0.9} />
-        ))}
-        {DOCKS.map((d) => (
-          <rect key={d} x={d - DOCK_W / 2} y={-10.2} width={DOCK_W} height={0.4} fill="#f2c230" opacity={0.8} />
-        ))}
-        {RACK_ROWS.map((c) => (
-          <rect key={c} x={c - RACK_HALF_DEPTH} y={RACK_Z0} width={RACK_HALF_DEPTH * 2} height={RACK_Z1 - RACK_Z0} fill="#8a6644" opacity={0.9} rx={0.1} />
-        ))}
-        <rect x={-12.6} y={6.2} width={4.4} height={0.8} fill="#8a5a36" />
-        <rect x={PICKUP.x - 2.65} y={PICKUP.z - 0.93} width={5.3} height={1.86} fill="#e8e8e8" rx={0.3} />
-        <rect x={STAIRS.landing.x0} y={STAIRS.landing.z0} width={STAIRS.landing.x1 - STAIRS.landing.x0} height={STAIRS.landing.z1 - STAIRS.landing.z0} fill="#9a9792" />
-        <rect x={STAIRS.x0} y={STAIRS.zTop} width={STAIRS.x1 - STAIRS.x0} height={STAIRS.zBottom - STAIRS.zTop} fill="#c4c1bb" />
-        {BEV_PALLETS.map(([x, z]) => (
-          <rect key={`${x}${z}`} x={x - 0.6} y={z - 0.5} width={1.2} height={1} fill="#f08a1c" opacity={0.8} />
-        ))}
-        <rect x={-1.3} y={-19.5} width={2.6} height={9} fill="#e8e8e8" opacity={0.5} />
-        <rect x={-17} y={13.2} width={34} height={7} fill="#3d4044" opacity={0.7} />
-        <text x={0} y={17.6} textAnchor="middle" fontSize={1.4} fill="#cbd5dc" fontWeight={700}>
-          Gdor. Tello 437
-        </text>
-        {[-12.2, -2.5, 9.9].map((x, i) => (
-          <text key={x} x={x} y={0.5} textAnchor="middle" fontSize={1.3} fill="#A8E6CF" fontWeight={800}>
-            {['EST', 'NAVE', 'BEB'][i]}
+      <svg viewBox="-16.5 -8.2 47 16.4" className="w-full cursor-crosshair rounded-[3px] bg-black/35" onClick={onClick}>
+        <g data-plan transform="rotate(-90)">
+          {r(-9, 9, STREET.z0, STREET.z1, '#3d4044', 0.8)}
+          {r(-7.3, 7.3, SIDEWALK.z0, SIDEWALK.z1, '#9a9792', 0.55)}
+          <rect x={-6.5} y={-15} width={13} height={30} fill="rgba(168,230,207,0.06)" stroke="#A8E6CF" strokeOpacity={0.75} strokeWidth={0.22} />
+          {r(FRONT.gate1.x0, FRONT.gate1.x1, 14.7, 15.3, '#8e979f')}
+          {r(FRONT.gate2.x0, FRONT.gate2.x1, 14.7, 15.3, '#c9ced2')}
+          {r(FRONT.door.x - 0.45, FRONT.door.x + 0.45, 14.7, 15.3, '#0b0f14')}
+          {r(OFFICE.x0, OFFICE.x1, OFFICE.z0, OFFICE.z1, '#8a5a36', 0.85)}
+          {r(SALON.x0, SALON.x1, SALON.z0, SALON.z1, '#5C1A33', 0.75)}
+          {r(SHELF_RUN.x0, SHELF_RUN.x1, SHELF_RUN.z0, SHELF_RUN.z1, '#b58c60', 0.9)}
+          {BEV_PALLETS.map(([x, z]) => (
+            <rect key={`${x}${z}`} x={x - 0.6} y={z - 0.5} width={1.2} height={1} fill="#1d5eaa" opacity={0.9} />
+          ))}
+          {r(CRATE_WALL.x0, CRATE_WALL.x1, CRATE_WALL.z0, CRATE_WALL.z1, '#c3202b', 0.8)}
+          {r(MEZZ.x0, MEZZ.x1, MEZZ.z0, MEZZ.z1, '#9a9792', 0.7)}
+          {r(STAIRS.x0, STAIRS.x1, STAIRS.zTop, STAIRS.zBottom, '#c4c1bb')}
+          <rect x={PICKUP.x - 0.95} y={PICKUP.z - 3.3} width={1.9} height={6.2} fill="#e8e8e8" rx={0.3} />
+          {r(STACKER.x - 0.4, STACKER.x + 0.4, STACKER.z - 1.2, STACKER.z + 0.7, '#e0441d')}
+          {HOTSPOTS.map((h) => (
+            <circle key={h.id} cx={h.pos[0]} cy={h.pos[2]} r={0.55} fill="#A8E6CF" stroke="#0b0f14" strokeWidth={0.15} opacity={cad ? 1 : 0.6} />
+          ))}
+          <g transform={`translate(${p.x} ${p.z}) rotate(${ang})`}>
+            <path d="M0 0 L-2.2 -5 A5.4 5.4 0 0 1 2.2 -5 Z" fill="#A8E6CF" opacity={0.28} />
+            <circle r={0.8} fill="#ffffff" stroke="#5C1A33" strokeWidth={0.35} />
+          </g>
+        </g>
+        {(
+          [
+            ['EST', 0, 5.8],
+            ['NAVE', -3, 1],
+            ['BEB', 0, -4],
+            ['SALÓN', 11.6, -4.2],
+            ['OF.', 12.3, 4.7],
+            ['DESP.', -12.5, -1.5],
+          ] as [string, number, number][]
+        ).map(([t, u, v]) => (
+          <text key={t} x={u} y={v + 0.4} textAnchor="middle" fontSize={1.1} fill="#A8E6CF" fontWeight={800}>
+            {t}
           </text>
         ))}
-        {HOTSPOTS.map((h) => (
-          <circle key={h.id} cx={h.pos[0]} cy={h.pos[2]} r={0.55} fill="#A8E6CF" stroke="#0b0f14" strokeWidth={0.15} />
-        ))}
-        <g transform={`translate(${p.x} ${p.z}) rotate(${ang})`}>
-          <path d="M0 0 L-2.2 -5 A5.4 5.4 0 0 1 2.2 -5 Z" fill="#A8E6CF" opacity={0.28} />
-          <circle r={0.8} fill="#ffffff" stroke="#5C1A33" strokeWidth={0.35} />
-        </g>
+        <text x={(STREET.z0 + STREET.z1) / 2} y={0} textAnchor="middle" fontSize={1.1} fill="#cbd5dc" fontWeight={700} transform={`rotate(90 ${(STREET.z0 + STREET.z1) / 2} 0)`}>
+          Gdor. Tello 437
+        </text>
       </svg>
       <div className="mt-2 text-[12px] font-semibold text-white">{zone}</div>
       <div className="mt-0.5 grid grid-cols-3 gap-1 font-mono text-[10.5px] text-slate-300">
@@ -345,7 +337,13 @@ function MiniMap() {
         <span>Z {p.z.toFixed(1)}</span>
         <span>H {p.y.toFixed(1)} m</span>
       </div>
-      <div className="mt-0.5 font-mono text-[10.5px] text-slate-400">Dist. a acceso: {Math.hypot(p.x - ENTRANCE.x, p.z - 10).toFixed(1)} m</div>
+      <div className="mt-0.5 font-mono text-[10.5px] text-slate-400">Dist. a portón principal: {Math.hypot(p.x - GATE1_X, p.z - HALF_D).toFixed(1)} m</div>
+      <button
+        onClick={() => useStore.getState().set({ cadLabels: !cad })}
+        className={`mt-2 w-full rounded-[3px] border px-2 py-1.5 text-[11.5px] font-semibold transition ${cad ? 'border-bim/60 bg-bim/10 text-bim' : 'border-white/15 text-slate-200 hover:bg-white/10'}`}
+      >
+        {cad ? 'Ocultar Etiquetas CAD' : 'Mostrar Etiquetas CAD'}
+      </button>
     </div>
   )
 }
@@ -554,6 +552,7 @@ export function HUD() {
       </div>
 
       <Welcome />
+      <Viewer />
     </div>
   )
 }

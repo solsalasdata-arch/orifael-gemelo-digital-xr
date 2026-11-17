@@ -1,5 +1,5 @@
 import { Html, Line } from '@react-three/drei'
-import { BOTTOM_CHORD, EAVE, HALF_D, HALF_W, RIDGE, TRUSS_X } from '../data'
+import { FASCIA, HALF_D, HALF_W, SIDEWALK, SLAB_Y } from '../data'
 import { BIM_COLOR } from '../materials'
 import { useStore } from '../store'
 
@@ -23,24 +23,15 @@ function Dim({ a, b, label, offset = [0, 0, 0] }: { a: V; b: V; label: string; o
 
 export function Dimensions() {
   const bim = useStore((s) => s.bim)
-  const mode = useStore((s) => s.mode)
-  if (!bim && mode !== 'orbit') return null
+  const cad = useStore((s) => s.cadLabels)
+  if (!bim && !cad) return null
   return (
     <group>
-      <Dim a={[-HALF_W, 0, HALF_D]} b={[HALF_W, 0, HALF_D]} offset={[0, 0, 3]} label="30,00 m · Frente Gdor. Tello" />
-      <Dim a={[HALF_W, 0, HALF_D]} b={[HALF_W, 0, -HALF_D]} offset={[2.5, 0, 0]} label="20,00 m · Luz libre" />
-      <Dim a={[HALF_W, 0, 0]} b={[HALF_W, RIDGE, 0]} offset={[2.5, 0, 0]} label="8,00 m · Cumbrera" />
-      {bim && (
-        <>
-          <Dim a={[-HALF_W, 0, -HALF_D]} b={[-HALF_W, EAVE, -HALF_D]} offset={[-2, 0, 0]} label="6,90 m · Alero" />
-          <Dim a={[0, BOTTOM_CHORD, -HALF_D]} b={[0, BOTTOM_CHORD, HALF_D]} offset={[0, -0.6, 0]} label="Cabriada reticulada · L = 20 m" />
-          {TRUSS_X.map((x, i) => (
-            <Html key={x} center position={[Math.max(-HALF_W + 0.2, Math.min(HALF_W - 0.2, x)), 0.05, HALF_D + 1.2]} style={{ pointerEvents: 'none' }}>
-              <div className="flex h-6 w-6 items-center justify-center rounded-[3px] border border-bim bg-black/70 font-mono text-[11px] font-bold text-bim">{i + 1}</div>
-            </Html>
-          ))}
-        </>
-      )}
+      <Dim a={[-HALF_W, 0.2, SIDEWALK.z1]} b={[HALF_W, 0.2, SIDEWALK.z1]} offset={[0, 0, 1.2]} label="13,00 m · Frente Gdor. Tello" />
+      <Dim a={[HALF_W, FASCIA.y1, HALF_D]} b={[HALF_W, FASCIA.y1, -HALF_D]} offset={[1.5, 0, 0]} label="30,00 m · Fondo" />
+      <Dim a={[-HALF_W, 0, -HALF_D]} b={[-HALF_W, SLAB_Y, -HALF_D]} offset={[-1.2, 0, 0]} label="4,60 m · Losa" />
+      <Dim a={[HALF_W + 0.8, 0.2, HALF_D]} b={[HALF_W + 0.8, 0.2, SIDEWALK.z1]} offset={[0.8, 0, 0]} label="5,00 m · Playón" />
+      {bim && <Dim a={[-HALF_W - 0.8, FASCIA.y1, HALF_D]} b={[-HALF_W - 0.8, FASCIA.y1, HALF_D + FASCIA.overhang]} offset={[0, 0.6, 0]} label="Alero 1,00 m" />}
     </group>
   )
 }

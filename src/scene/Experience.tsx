@@ -1,16 +1,14 @@
-import { Environment, Lightformer } from '@react-three/drei'
+import { ContactShadows, Environment } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { BAY_CENTERS, BOTTOM_CHORD, ORBIT_FOV, SUN_DIR, WALK_FOV } from '../data'
+import { IN_X, IN_Z, ORBIT_FOV, ORBIT_VIEW, SIDEWALK, SUN_DIR, WALK_FOV } from '../data'
 import { useStore } from '../store'
-import { Building } from './Building'
+import { Shell } from './Shell'
 import { Dimensions } from './Dimensions'
 import { Hotspots } from './Hotspots'
 import { INITIAL_CAMERA, Navigation } from './Navigation'
-import { Racks } from './Racks'
 import { RealSite } from './RealSite'
-import { Zones } from './Zones'
 import { EffectComposer, HueSaturation, N8AO, SMAA, ToneMapping } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 
@@ -86,22 +84,24 @@ function PostFX() {
 }
 
 const SUN_POS: [number, number, number] = [SUN_DIR[0] * 60, SUN_DIR[1] * 60, SUN_DIR[2] * 60]
+const HDRI = `${import.meta.env.BASE_URL}hdri/overcast_1k.hdr`
+const FOG = '#c5c9cd'
 
 function Lights() {
   const bim = useStore((s) => s.bim)
   return (
     <>
-      <hemisphereLight args={['#e4ebf2', '#5f6164', bim ? 0.95 : 0.6]} />
+      <hemisphereLight args={['#e4ebf2', '#5f6164', bim ? 0.95 : 0.45]} />
       <directionalLight
         position={SUN_POS}
-        intensity={3.2}
+        intensity={2.6}
         color="#f3f6fa"
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-24}
-        shadow-camera-right={24}
-        shadow-camera-top={24}
-        shadow-camera-bottom={-24}
+        shadow-camera-left={-26}
+        shadow-camera-right={26}
+        shadow-camera-top={26}
+        shadow-camera-bottom={-26}
         shadow-camera-near={10}
         shadow-camera-far={120}
         shadow-radius={6}
@@ -109,40 +109,22 @@ function Lights() {
         shadow-bias={-0.0004}
         shadow-normalBias={0.04}
       />
-      {[BAY_CENTERS[1], BAY_CENTERS[4]].flatMap((x) =>
-        [-6.5, 0, 6.5].map((z) => (
-          <pointLight key={`${x}${z}`} position={[x, BOTTOM_CHORD - 0.7, z]} intensity={30} distance={20} decay={1.6} color="#f4f1ea" />
-        )),
-      )}
-      <pointLight position={[-10.5, 3.2, 7.6]} intensity={10} distance={9} decay={1.6} color="#f1f4f8" />
     </>
   )
 }
 
-function SkyDome() {
-  const tex = useMemo(() => {
-    const c = document.createElement('canvas')
-    c.width = 4
-    c.height = 512
-    const ctx = c.getContext('2d')!
-    const g = ctx.createLinearGradient(0, 0, 0, 512)
-    g.addColorStop(0, '#8d949b')
-    g.addColorStop(0.35, '#b4b9be')
-    g.addColorStop(0.5, '#cdd0d3')
-    g.addColorStop(0.56, '#b8bbbe')
-    g.addColorStop(1, '#8f9295')
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, 4, 512)
-    const t = new THREE.CanvasTexture(c)
-    t.colorSpace = THREE.SRGBColorSpace
-    return t
-  }, [])
-  return (
-    <mesh scale={600} renderOrder={-1}>
-      <sphereGeometry args={[1, 32, 24]} />
-      <meshBasicMaterial map={tex} side={THREE.BackSide} fog={false} depthWrite={false} toneMapped={false} />
-    </mesh>
-  )
+function FogControl() {
+  const fog = useThree((s) => s.scene.fog) as THREE.Fog | null
+  const target = useMemo(() => new THREE.Vector3(...ORBIT_VIEW.target), [])
+  useFrame(({ camera }) => {
+    if (!fog) return
+    const { mode, flight } = useStore.getState()
+    const orbit = (flight ? flight.toMode : mode) === 'orbit' || camera.position.y > 12
+    const d = orbit ? camera.position.distanceTo(target) : 0
+    fog.near = orbit ? d * 0.85 : 22
+    fog.far = orbit ? d + 80 : 80
+  })
+  return null
 }
 
 function LensControl() {
@@ -172,20 +154,15 @@ export function Experience() {
     <>
       <CameraInit />
       <LensControl />
-      <color attach="background" args={['#c0c3c6']} />
-      <fog attach="fog" args={['#c3c4c4', 150, 520]} />
-      <SkyDome />
-      <Environment resolution={256} frames={1} environmentIntensity={clay ? 0.45 : 0.7}>
-        <Lightformer form="rect" intensity={3} position={[0, 8, 0]} rotation-x={Math.PI / 2} scale={[30, 6, 1]} />
-        <Lightformer form="rect" intensity={1.5} position={[0, 3, 12]} scale={[20, 3, 1]} />
-        <Lightformer form="rect" intensity={1.0} color="#e6ebf0" position={[-14, 4, 0]} rotation-y={Math.PI / 2} scale={[20, 2, 1]} />
-        <Lightformer form="rect" intensity={1.4} color="#eef2f6" position={[14, 4, 0]} rotation-y={-Math.PI / 2} scale={[20, 2, 1]} />
-      </Environment>
+      <FogControl />
+      <color attach="background" args={[FOG]} />
+      <fog attach="fog" args={[FOG, 22, 80]} />
+      <Environment files={HDRI} background backgroundIntensity={0.95} environmentIntensity={clay ? 0.45 : 0.7} />
       <Lights />
-      <Building />
-      <Racks />
-      <Zones />
+      <Shell />
       <RealSite />
+      <ContactShadows position={[0, 0.012, 0]} scale={[2 * IN_X, 2 * IN_Z]} resolution={1024} far={1.6} blur={2.4} opacity={0.55} frames={2} color="#1b1814" />
+      <ContactShadows position={[0, SIDEWALK.curb + 0.004, (SIDEWALK.z0 + SIDEWALK.z1) / 2]} scale={[16, 5]} resolution={512} far={1.6} blur={2} opacity={0.5} frames={2} color="#1b1814" />
       <Hotspots />
       <Dimensions />
       <Navigation />

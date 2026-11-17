@@ -585,3 +585,91 @@ export const concreteNormalTex = () =>
     },
     false,
   )
+
+export const rustTex = () =>
+  make('rust', 512, 512, (ctx, w, h) => {
+    const r = rng(77)
+    ctx.fillStyle = '#7a4a2c'
+    ctx.fillRect(0, 0, w, h)
+    for (let i = 0; i < 900; i++) {
+      ctx.fillStyle = `rgba(${(120 + r() * 80) | 0},${(60 + r() * 40) | 0},${(30 + r() * 20) | 0},${0.15 + r() * 0.35})`
+      const s = 4 + r() * 40
+      ctx.beginPath()
+      ctx.ellipse(r() * w, r() * h, s, s * (0.3 + r()), r() * 3, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    for (let i = 0; i < 120; i++) {
+      ctx.fillStyle = `rgba(150,150,145,${0.1 + r() * 0.25})`
+      ctx.fillRect(r() * w, r() * h, 10 + r() * 60, 4 + r() * 30)
+    }
+    const ribs = 8
+    for (let i = 0; i < ribs; i++) {
+      const x0 = (i * w) / ribs
+      const g = ctx.createLinearGradient(x0, 0, x0 + w / ribs, 0)
+      g.addColorStop(0, 'rgba(0,0,0,0.25)')
+      g.addColorStop(0.4, 'rgba(255,255,255,0.12)')
+      g.addColorStop(1, 'rgba(0,0,0,0.2)')
+      ctx.fillStyle = g
+      ctx.fillRect(x0, 0, w / ribs, h)
+    }
+    noise(ctx, w, h, 20, 5)
+  })
+
+export const stoneTex = () =>
+  make('stone', 512, 256, (ctx, w, h) => {
+    const r = rng(31)
+    ctx.fillStyle = '#5d574f'
+    ctx.fillRect(0, 0, w, h)
+    let y = 0
+    while (y < h) {
+      const rh = 28 + r() * 30
+      let x = -r() * 40
+      while (x < w) {
+        const rw = 40 + r() * 70
+        const c = (90 + r() * 70) | 0
+        ctx.fillStyle = `rgb(${c},${c - 8},${c - 18})`
+        ctx.beginPath()
+        ctx.moveTo(x + 4 + r() * 6, y + 3 + r() * 4)
+        ctx.lineTo(x + rw - 4 - r() * 6, y + 3 + r() * 5)
+        ctx.lineTo(x + rw - 3 - r() * 5, y + rh - 3 - r() * 5)
+        ctx.lineTo(x + 3 + r() * 6, y + rh - 3 - r() * 4)
+        ctx.closePath()
+        ctx.fill()
+        x += rw
+      }
+      y += rh
+    }
+    noise(ctx, w, h, 24, 8)
+  })
+
+export const glassBlockTex = () =>
+  make('gblock', 256, 128, (ctx, w, h) => {
+    ctx.fillStyle = '#8f8f8c'
+    ctx.fillRect(0, 0, w, h)
+    for (let i = 0; i < 4; i++)
+      for (let j = 0; j < 2; j++) {
+        const g = ctx.createRadialGradient(i * 64 + 32, j * 64 + 32, 4, i * 64 + 32, j * 64 + 32, 34)
+        g.addColorStop(0, '#e9f1f2')
+        g.addColorStop(1, '#9fb2b6')
+        ctx.fillStyle = g
+        ctx.fillRect(i * 64 + 5, j * 64 + 5, 54, 54)
+      }
+  })
+
+export const crateTex = () =>
+  make('crate', 256, 160, (ctx, w, h) => {
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = 'rgba(0,0,0,0.28)'
+    for (let i = 0; i < 6; i++) ctx.fillRect(18 + i * 38, 22, 6, h - 44)
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'
+    ctx.beginPath()
+    ctx.roundRect(w / 2 - 34, 14, 68, 22, 10)
+    ctx.fill()
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.fillRect(0, h - 10, w, 10)
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'
+    ctx.fillRect(0, 0, w, 4)
+    ctx.fillRect(0, 0, 4, h)
+    ctx.fillRect(w - 4, 0, 4, h)
+  })

@@ -1,14 +1,14 @@
 import { useTexture } from '@react-three/drei'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { EAVE, ENTRANCE, GATE_R, WALL_SHELVES, HALF_D, HALF_W, PHOTOS, photoSrc, PICKUP, STAIRS, BEV_PALLETS, WALL_T, type PhotoKey } from '../data'
 import {
-  bimSolidMat, concreteBeamMat, darkSteelMat, glassMat, palletMat, plankMat, plasterMat, rubberMat, shutterMat, whiteMat, columnMat,
-} from '../materials'
+  BEV_PALLETS, COL_Z, CRATE_WALL, IN_X, IN_Z, MEZZ, OFFICE, PHOTOS, photoSrc, PICKUP, SALON, SHELF_RUN, SLAB_Y, STACKER, STAIRS, type PhotoKey,
+} from '../data'
+import { boxMat, columnMat, concreteBeamMat, darkSteelMat, glassMat, palletMat, plankMat, rackBeamMat, rackUprightMat, rubberMat, shutterMat, wallMat, whiteMat, yellowMat } from '../materials'
 import { useStore } from '../store'
-import { bevPackTex } from '../textures'
+import { crateTex, offerTex } from '../textures'
 import { InstancedBoxes, boxAt } from './Instanced'
-import { LightPanel } from './Zones'
+import { LightPanel } from './Panel'
 
 const photoUrl = photoSrc
 
@@ -64,7 +64,7 @@ function useCrop(name: keyof typeof CROPS) {
   }, [base, x0, y0, x1, y1])
 }
 
-function PhotoCrop({ name, height, width, position, rotationY = 0, glow = 0.3 }: { name: keyof typeof CROPS; height?: number; width?: number; position: [number, number, number]; rotationY?: number; glow?: number }) {
+export function PhotoCrop({ name, height, width, position, rotationY = 0, glow = 0.3 }: { name: keyof typeof CROPS; height?: number; width?: number; position: [number, number, number]; rotationY?: number; glow?: number }) {
   const { tex, aspect } = useCrop(name)
   const h = height ?? (width ?? 1) / aspect
   const w = width ?? h * aspect
@@ -76,126 +76,286 @@ function PhotoCrop({ name, height, width, position, rotationY = 0, glow = 0.3 }:
   )
 }
 
-function Facade() {
-  const bim = useStore((s) => s.bim)
-  const zf = HALF_D + WALL_T + 0.012
-  const top = EAVE + 0.25
-  const crateMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#1f3f66', roughness: 0.6 }), [])
-  const yellowBoxMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f2c230', roughness: 0.8 }), [])
-  const L0 = ENTRANCE.x - ENTRANCE.w / 2
-  const L1 = ENTRANCE.x + ENTRANCE.w / 2
-  const R0 = GATE_R.x - GATE_R.w / 2
-  const R1 = GATE_R.x + GATE_R.w / 2
-  const dl = GATE_R.x - GATE_R.door / 2
-  const dr = GATE_R.x + GATE_R.door / 2
-  const zc = HALF_D + WALL_T / 2
-  const plaster: [number, number, number][] = [[L1, R0, 0], [L0, L1, ENTRANCE.h], [R0, R1, GATE_R.h], [-HALF_W - WALL_T, HALF_W + WALL_T, top - 0.9]]
+
+const QUILMES = new THREE.Color('#1d5eaa')
+const COCA = new THREE.Color('#c3202b')
+const crateMatShared = () => {
+  const g = globalThis as unknown as { __crateMat?: THREE.MeshStandardMaterial }
+  g.__crateMat ??= new THREE.MeshStandardMaterial({ map: crateTex(), roughness: 0.5 })
+  return g.__crateMat
+}
+
+function BevPallets() {
+  const { pal, cm, cc } = useMemo(() => {
+    const pal: THREE.Matrix4[] = []
+    const cm: THREE.Matrix4[] = []
+    const cc: THREE.Color[] = []
+    BEV_PALLETS.forEach(([x, z], i) => {
+      const brand = i % 5 === 2 || i % 7 === 0 ? COCA : QUILMES
+      for (const level of [0, 1]) {
+        const y0 = level * 1.3
+        pal.push(boxAt(x, y0 + 0.07, z, 1.2, 0.14, 1.0))
+        const layers = level === 0 ? 3 : 2 + ((i * 3) % 3 === 0 ? 1 : 0)
+        for (let ly = 0; ly < layers; ly++)
+          for (let ix = 0; ix < 2; ix++)
+            for (let iz = 0; iz < 3; iz++) {
+              cm.push(boxAt(x - 0.29 + ix * 0.58, y0 + 0.14 + 0.155 + ly * 0.37, z - 0.32 + iz * 0.32, 0.56, 0.36, 0.31))
+              cc.push(level === 1 && ly === layers - 1 && i % 4 === 1 ? COCA : brand)
+            }
+      }
+    })
+    return { pal, cm, cc }
+  }, [])
   return (
     <group>
-      {!bim &&
-        plaster.map(([x0, x1, y0], i) => (
-          <mesh key={i} position={[(x0 + x1) / 2, (y0 + top) / 2, zf + i * 0.002]} material={plasterMat(x1 - x0, top - y0)} receiveShadow>
-            <planeGeometry args={[x1 - x0, top - y0]} />
-          </mesh>
-        ))}
-      <mesh position={[(R0 + dl) / 2, GATE_R.h / 2, zc]} material={shutterMat(dl - R0, GATE_R.h)} castShadow receiveShadow>
-        <boxGeometry args={[dl - R0, GATE_R.h, 0.06]} />
+      <InstancedBoxes matrices={pal} material={palletMat()} />
+      <InstancedBoxes matrices={cm} colors={cc} material={crateMatShared()} />
+    </group>
+  )
+}
+
+function CrateWall() {
+  const { m, c } = useMemo(() => {
+    const m: THREE.Matrix4[] = []
+    const c: THREE.Color[] = []
+    const { x0, x1, z0, z1 } = CRATE_WALL
+    let k = 0
+    for (let z = z0 + 0.25; z < z1 - 0.2; z += 0.5) {
+      const layers = 4 + (k % 3)
+      for (let ix = 0; ix < 2; ix++)
+        for (let ly = 0; ly < layers; ly++) {
+          m.push(boxAt(x0 + 0.22 + ix * 0.4, 0.16 + ly * 0.31, z, 0.38, 0.3, 0.48))
+          c.push(Math.floor(z / 2.5) % 3 === 0 ? COCA : QUILMES)
+        }
+      k++
+    }
+    void x1
+    return { m, c }
+  }, [])
+  return <InstancedBoxes matrices={m} colors={c} material={crateMatShared()} />
+}
+
+function RackSection({ z0, z1, seed }: { z0: number; z1: number; seed: number }) {
+  const x = -IN_X + 0.48
+  const { frame, beams, boxes } = useMemo(() => {
+    const frame: THREE.Matrix4[] = []
+    const beams: THREE.Matrix4[] = []
+    const boxes: THREE.Matrix4[] = []
+    const n = Math.max(1, Math.round((z1 - z0) / 2.2))
+    const bay = (z1 - z0) / n
+    for (let i = 0; i <= n; i++) for (const dx of [-0.42, 0.42]) frame.push(boxAt(x + dx, 1.25, z0 + i * bay, 0.07, 2.5, 0.07))
+    let r = seed
+    const rnd = () => ((r = (r * 16807) % 2147483647) / 2147483647)
+    for (const y of [0.12, 1.0, 1.85]) {
+      for (const dx of [-0.42, 0.42]) beams.push(boxAt(x + dx, y, (z0 + z1) / 2, 0.06, 0.1, z1 - z0))
+      for (let zz = z0 + 0.35; zz < z1 - 0.3; zz += 0.62) if (rnd() > 0.2) {
+        const h = 0.3 + rnd() * 0.38
+        boxes.push(boxAt(x + (rnd() - 0.5) * 0.12, y + 0.05 + h / 2, zz, 0.7, h, 0.5))
+      }
+    }
+    return { frame, beams, boxes }
+  }, [x, z0, z1, seed])
+  return (
+    <group>
+      <InstancedBoxes matrices={frame} material={rackUprightMat()} />
+      <InstancedBoxes matrices={beams} material={rackBeamMat()} />
+      <InstancedBoxes matrices={boxes} material={boxMat(seed % 2 ? 1 : 0)} />
+    </group>
+  )
+}
+
+function ShelfRun() {
+  const { z0, z1 } = SHELF_RUN
+  const parts: [number, number, 'wood' | 'rack'][] = [
+    [z0, -4.1, 'wood'],
+    [-3.9, 0.6, 'rack'],
+    [0.8, 5.1, 'wood'],
+    [5.3, z1, 'rack'],
+  ]
+  return (
+    <group>
+      {parts.map(([a, b, t], i) =>
+        t === 'wood' ? (
+          <group key={i}>
+            <Shelving position={[-IN_X + 0.24, 0, (a + b) / 2]} rotationY={Math.PI / 2} width={b - a} white={false} seed={50 + i} bottles={i === 2} />
+            <Shelving position={[-IN_X + 0.24, 2.05, (a + b) / 2]} rotationY={Math.PI / 2} width={b - a} white={false} seed={70 + i} bottles={false} />
+          </group>
+        ) : (
+          <RackSection key={i} z0={a} z1={b} seed={90 + i} />
+        ),
+      )}
+    </group>
+  )
+}
+
+function Wainscot() {
+  const bim = useStore((s) => s.bim)
+  const boards = useMemo(() => new THREE.MeshStandardMaterial({ color: '#5f6366', metalness: 0.3, roughness: 0.6 }), [])
+  if (bim) return null
+  const h = 2.9
+  const z0 = SHELF_RUN.z0 - 0.4
+  const z1 = OFFICE.z0
+  return (
+    <group>
+      <mesh position={[-IN_X + 0.01, h / 2, (z0 + z1) / 2]} rotation-y={Math.PI / 2} material={plankMat(8, 1.4)} receiveShadow>
+        <planeGeometry args={[z1 - z0, h]} />
       </mesh>
-      <mesh position={[(dr + R1) / 2, GATE_R.h / 2, zc]} material={shutterMat(R1 - dr, GATE_R.h)} castShadow receiveShadow>
-        <boxGeometry args={[R1 - dr, GATE_R.h, 0.06]} />
-      </mesh>
-      <mesh position={[GATE_R.x, (2.1 + GATE_R.h) / 2, zc]} material={shutterMat(GATE_R.door, GATE_R.h - 2.1)} castShadow>
-        <boxGeometry args={[GATE_R.door, GATE_R.h - 2.1, 0.06]} />
-      </mesh>
-      {[dl, dr].map((x) => (
-        <mesh key={x} position={[x, 1.05, zc + 0.04]} material={darkSteelMat()}>
-          <boxGeometry args={[0.06, 2.1, 0.08]} />
+      {[-1.5, 3.6].map((z) => (
+        <mesh key={z} position={[-IN_X + 0.08, 3.4, z]} material={boards} castShadow>
+          <boxGeometry args={[0.12, 0.6, 0.45]} />
         </mesh>
       ))}
-      <mesh position={[GATE_R.x, 2.1, zc + 0.04]} material={darkSteelMat()}>
-        <boxGeometry args={[GATE_R.door + 0.06, 0.06, 0.08]} />
+    </group>
+  )
+}
+
+function Office() {
+  const bim = useStore((s) => s.bim)
+  const { x0, x1, z0, z1, h, doorZ } = OFFICE
+  const t = 0.1
+  const wood = plankMat(3, 1.2)
+  const winZ: [number, number] = [12.5, 13.8]
+  const east: [number, number, number, number][] = [
+    [z0, doorZ[0], 0, h],
+    [doorZ[1], winZ[0], 0, h],
+    [winZ[1], z1, 0, h],
+    [winZ[0], winZ[1], 0, 1.0],
+    [winZ[0], winZ[1], 1.95, h],
+    [doorZ[0], doorZ[1], 2.15, h],
+  ]
+  if (bim) return null
+  return (
+    <group>
+      <mesh position={[(x0 + x1) / 2, h / 2, z0]} material={wood} castShadow receiveShadow>
+        <boxGeometry args={[x1 - x0, h, t]} />
       </mesh>
-      <mesh position={[dr - 0.04, 1.04, zc - 0.44]} rotation-y={Math.PI / 2} material={shutterMat(GATE_R.door, 2.06)} castShadow>
-        <boxGeometry args={[GATE_R.door - 0.04, 2.06, 0.04]} />
-      </mesh>
-      <mesh position={[GATE_R.x, GATE_R.h + 0.15, zf + 0.12]} material={darkSteelMat()} castShadow>
-        <boxGeometry args={[GATE_R.w + 0.3, 0.3, 0.24]} />
-      </mesh>
-      <group position={[(L0 + R1) / 2, 6.2, zf + 0.1]}>
-        <mesh material={darkSteelMat()} castShadow>
-          <boxGeometry args={[7.6, 3.1, 0.12]} />
+      {east.map(([a, b, y0, y1], i) => (
+        <mesh key={i} position={[x1, (y0 + y1) / 2, (a + b) / 2]} material={wood} castShadow receiveShadow>
+          <boxGeometry args={[t, y1 - y0, b - a]} />
         </mesh>
-        <PhotoCrop name="sign" width={7.4} position={[0, 0, 0.065]} glow={0.55} />
-        {[-2.8, 0, 2.8].map((x) => (
-          <mesh key={x} position={[x, 1.65, 0.35]} rotation-x={0.5} material={darkSteelMat()}>
-            <boxGeometry args={[0.5, 0.08, 0.25]} />
+      ))}
+      <mesh position={[x1, 1.475, (winZ[0] + winZ[1]) / 2]} material={glassMat()}>
+        <boxGeometry args={[0.02, 0.95, winZ[1] - winZ[0]]} />
+      </mesh>
+      <mesh position={[(x0 + x1) / 2, h + 0.03, (z0 + z1) / 2]} material={wood} castShadow>
+        <boxGeometry args={[x1 - x0, 0.06, z1 - z0]} />
+      </mesh>
+      <mesh position={[x1 + 0.42, 1.05, doorZ[0] + 0.05]} rotation-y={-1.2} material={plankMat(1, 1)} castShadow>
+        <boxGeometry args={[0.95, 2.1, 0.05]} />
+      </mesh>
+      <mesh position={[-5.8, 0.38, 13.4]} material={plankMat(2, 1)} castShadow receiveShadow>
+        <boxGeometry args={[0.9, 0.76, 1.6]} />
+      </mesh>
+      <mesh position={[-6.0, 0.98, 13.2]} material={darkSteelMat()}>
+        <boxGeometry args={[0.05, 0.36, 0.55]} />
+      </mesh>
+      <mesh position={[-5.75, 0.82, 13.9]} material={whiteMat()}>
+        <boxGeometry args={[0.4, 0.12, 0.35]} />
+      </mesh>
+      <pointLight position={[-4.6, 2.55, 12.3]} intensity={5} distance={6} decay={1.6} color="#fff1dc" />
+    </group>
+  )
+}
+
+function Salon() {
+  const bim = useStore((s) => s.bim)
+  const { x0, x1, z0, z1, h, openX } = SALON
+  const fridgeMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#c41820', metalness: 0.3, roughness: 0.4 }), [])
+  const candy = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f5b83d', roughness: 0.5 }), [])
+  const wood = plankMat(4, 1.2)
+  return (
+    <group>
+      {!bim && (
+        <>
+          <mesh position={[x0, h / 2, (z0 + z1) / 2]} material={wood} castShadow receiveShadow>
+            <boxGeometry args={[0.1, h, z1 - z0]} />
           </mesh>
-        ))}
+          <mesh position={[x0, (h + SLAB_Y) / 2, (z0 + z1) / 2]} material={wallMat(z1 - z0, SLAB_Y - h)}>
+            <boxGeometry args={[0.1, SLAB_Y - h, z1 - z0]} />
+          </mesh>
+          {[
+            [x0, openX[0], 0, h],
+            [openX[1], x1, 0, h],
+            [openX[0], openX[1], 2.2, h],
+          ].map(([a, b, y0, y1], i) => (
+            <mesh key={i} position={[(a + b) / 2, (y0 + y1) / 2, z0]} material={wood} castShadow receiveShadow>
+              <boxGeometry args={[b - a, y1 - y0, 0.1]} />
+            </mesh>
+          ))}
+          <mesh position={[(x0 + x1) / 2, (h + SLAB_Y) / 2, z0]} material={wallMat(x1 - x0, SLAB_Y - h)}>
+            <boxGeometry args={[x1 - x0, SLAB_Y - h, 0.1]} />
+          </mesh>
+          <mesh position={[(x0 + x1) / 2, h, (z0 + z1) / 2]} rotation-x={Math.PI / 2} material={plankMat(3, 4)}>
+            <planeGeometry args={[x1 - x0, z1 - z0]} />
+          </mesh>
+          {[10.6, 13.0].map((z) => (
+            <mesh key={z} position={[4.2, h - 0.02, z]}>
+              <boxGeometry args={[0.6, 0.03, 0.6]} />
+              <meshStandardMaterial color="#ffffff" emissive="#f6f8ff" emissiveIntensity={2} toneMapped={false} />
+            </mesh>
+          ))}
+        </>
+      )}
+      <pointLight position={[4.2, 2.7, 11.8]} intensity={9} distance={8} decay={1.6} color="#f4f6ff" />
+      {[13.4, 12.62, 11.84].map((z) => (
+        <group key={z} position={[IN_X - 0.4, 0, z]} rotation-y={-Math.PI / 2}>
+          <mesh position-y={1.0} material={fridgeMat} castShadow>
+            <boxGeometry args={[0.74, 2.0, 0.7]} />
+          </mesh>
+          <PhotoCrop name="fridge" height={1.75} position={[0, 1.0, 0.356]} glow={0.55} />
+        </group>
+      ))}
+      <group position={[IN_X - 0.4, 0, 10.4]} rotation-y={-Math.PI / 2}>
+        <mesh position-y={0.42} material={whiteMat()} castShadow>
+          <boxGeometry args={[1.3, 0.84, 0.7]} />
+        </mesh>
+        <PhotoCrop name="freezer" height={0.84} position={[0, 0.42, 0.356]} glow={0.3} />
+        <mesh position-y={0.87} material={glassMat()}>
+          <boxGeometry args={[1.26, 0.08, 0.66]} />
+        </mesh>
       </group>
-      <mesh position={[0, top + 0.12, zf + 0.8]} material={concreteBeamMat()} castShadow receiveShadow>
-        <boxGeometry args={[2 * HALF_W + 0.6, 0.24, 1.6]} />
-      </mesh>
-      {[-12, -7.4, -3, 0, 3, 8, 12].map((x) => (
-        <mesh key={x} position={[x, top - 0.03, zf + 0.9]}>
-          <boxGeometry args={[1.2, 0.05, 0.08]} />
-          <meshStandardMaterial color="#ffffff" emissive="#f4f7ff" emissiveIntensity={2.2} toneMapped={false} />
+      <Shelving position={[x0 + 0.3, 0, 11.7]} rotationY={Math.PI / 2} width={5.0} white seed={23} bottles />
+      <group position={[4.9, 0, 9.0]}>
+        <mesh position-y={0.55} material={plankMat(2, 1)} castShadow receiveShadow>
+          <boxGeometry args={[2.5, 1.1, 0.72]} />
         </mesh>
-      ))}
-      <pointLight position={[0, top - 0.6, zf + 1.6]} intensity={14} distance={11} color="#eef2ff" />
-      <mesh position={[ENTRANCE.x, ENTRANCE.h - 0.45, zf + 0.06]} material={shutterMat(ENTRANCE.w, 0.9)} castShadow>
-        <boxGeometry args={[ENTRANCE.w + 0.2, 0.9, 0.08]} />
-      </mesh>
-      <mesh position={[ENTRANCE.x, ENTRANCE.h + 0.12, zf + 0.12]} material={darkSteelMat()} castShadow>
-        <boxGeometry args={[ENTRANCE.w + 0.4, 0.26, 0.24]} />
-      </mesh>
-      <group position={[L1 + 0.9, 0, zf + 0.9]} rotation-y={-0.25}>
-        <group rotation-x={-0.1}>
-          <mesh position={[0, 0.72, -0.01]} material={plankMat(1, 1)} castShadow>
-            <boxGeometry args={[0.82, 1.44, 0.04]} />
+        <mesh position={[0, 1.13, 0]} material={whiteMat()}>
+          <boxGeometry args={[2.55, 0.05, 0.78]} />
+        </mesh>
+        <PhotoCrop name="atencion" height={0.72} position={[-0.6, 0.52, 0.37]} glow={0.3} />
+        <PhotoCrop name="personal" height={0.48} position={[0.35, 0.6, 0.37]} glow={0.3} />
+        <group position={[0.95, 0.62, 0.37]}>
+          <PhotoCrop name="filmando" height={0.42} position={[0, 0, 0]} glow={0.35} />
+        </group>
+        {[-0.62, 0.62].map((dx) => (
+          <mesh key={dx} position={[dx, 1.65, 0.1]} material={glassMat()}>
+            <boxGeometry args={[1.15, 0.95, 0.015]} />
           </mesh>
-          <PhotoCrop name="chalk" height={1.36} position={[0, 0.74, 0.015]} glow={0.25} />
+        ))}
+        <mesh position={[0.2, 1.22, -0.05]} material={whiteMat()}>
+          <boxGeometry args={[0.4, 0.12, 0.36]} />
+        </mesh>
+        <group position={[0, 2.55, -0.15]}>
+          <mesh material={darkSteelMat()}>
+            <boxGeometry args={[1.12, 0.82, 0.1]} />
+          </mesh>
+          <PhotoCrop name="lucky" width={1.02} position={[0, 0, 0.055]} glow={0.85} />
         </group>
       </group>
-      <group position={[L0 - 0.6, 0, zf + 0.45]}>
-        {[0, 1, 2, 3].map((i) => (
-          <mesh key={i} position={[0, 0.17 + i * 0.35, 0]} material={crateMat} castShadow>
-            <boxGeometry args={[0.5, 0.33, 0.38]} />
+      <group position={[3.15, 0, 9.75]}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <mesh key={i} position={[0, 0.25 + i * 0.22, 0]} material={i % 2 ? glassMat() : candy}>
+            <boxGeometry args={[0.5, 0.18, 0.32]} />
           </mesh>
         ))}
-        <mesh position={[0, 1.58, 0]} material={yellowBoxMat} castShadow>
-          <boxGeometry args={[0.52, 0.34, 0.4]} />
-        </mesh>
-        <PhotoCrop name="crates" height={1.74} position={[0, 0.88, 0.2]} glow={0.25} />
-      </group>
-      <group position={[(L1 + R0) / 2 + 0.6, 1.35, zf + 0.04]}>
-        <mesh material={whiteMat()}>
-          <boxGeometry args={[1.95, 1.8, 0.04]} />
-        </mesh>
-        <PhotoCrop name="posters" height={1.7} position={[0, 0, 0.025]} glow={0.35} />
       </group>
     </group>
   )
 }
 
-function ConcreteFrame() {
-  const bim = useStore((s) => s.bim)
-  const m = useMemo(() => {
-    const out: THREE.Matrix4[] = []
-    const d = 0.38
-    ;[3.4, EAVE - 0.2].forEach((y) => {
-      out.push(boxAt(0, y, HALF_D - d / 2, 2 * HALF_W, 0.32, d))
-      out.push(boxAt(0, y, -HALF_D + d / 2, 2 * HALF_W, 0.32, d))
-      out.push(boxAt(-HALF_W + d / 2, y, 0, d, 0.32, 2 * HALF_D))
-      out.push(boxAt(HALF_W - d / 2, y, 0, d, 0.32, 2 * HALF_D))
-    })
-    return out
-  }, [])
-  return <InstancedBoxes matrices={m} material={bim ? bimSolidMat() : concreteBeamMat()} castShadow={!bim} />
-}
-
 function Stairs() {
-  const { x0, x1, zBottom, zTop, h, landing } = STAIRS
-  const steps = 18
+  const { x0, x1, zBottom, zTop, h } = STAIRS
+  const steps = 13
   const rise = h / steps
   const run = (zBottom - zTop) / steps
   const m = useMemo(() => {
@@ -208,41 +368,151 @@ function Stairs() {
   }, [x0, x1, zBottom, rise, run])
   const rail = useMemo(() => {
     const out: THREE.Matrix4[] = []
-    for (let i = 0; i <= steps; i += 3) out.push(boxAt(x0 + 0.05, rise * i + 0.5, zBottom - run * i, 0.04, 1, 0.04))
+    const xr = x1 - 0.04
+    for (let i = 0; i <= steps; i += 3) out.push(boxAt(xr, rise * i + 0.5, zBottom - run * i, 0.04, 1, 0.04))
     const len = Math.hypot(zBottom - zTop, h)
-    const mtx = new THREE.Matrix4().compose(
-      new THREE.Vector3(x0 + 0.05, h / 2 + 1, (zBottom + zTop) / 2),
-      new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.atan2(h, zBottom - zTop), 0, 0)),
-      new THREE.Vector3(0.05, 0.05, len),
+    out.push(
+      new THREE.Matrix4().compose(
+        new THREE.Vector3(xr, h / 2 + 1, (zBottom + zTop) / 2),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.atan2(h, zBottom - zTop), 0, 0)),
+        new THREE.Vector3(0.05, 0.05, len),
+      ),
     )
-    out.push(mtx)
-    out.push(boxAt(landing.x0 + 0.05, h + 1.05, (landing.z0 + landing.z1) / 2, 0.05, 0.05, landing.z1 - landing.z0))
-    out.push(boxAt((landing.x0 + x0) / 2, h + 1.05, landing.z1 - 0.05, x0 - landing.x0, 0.05, 0.05))
-    for (let z = landing.z0 + 0.2; z < landing.z1; z += 0.6) out.push(boxAt(landing.x0 + 0.05, h + 0.55, z, 0.04, 1, 0.04))
+    out.push(boxAt((MEZZ.x0 + MEZZ.x1) / 2 + (x1 - MEZZ.x0) / 2, MEZZ.y + 1.0, MEZZ.z1 - 0.04, MEZZ.x1 - x1, 0.05, 0.05))
+    out.push(boxAt(MEZZ.x1 - 0.04, MEZZ.y + 1.0, (MEZZ.z0 + MEZZ.z1) / 2, 0.05, 0.05, MEZZ.z1 - MEZZ.z0))
+    for (let x = x1 + 0.3; x < MEZZ.x1; x += 0.6) out.push(boxAt(x, MEZZ.y + 0.5, MEZZ.z1 - 0.04, 0.04, 1, 0.04))
+    for (let z = MEZZ.z0 + 0.3; z < MEZZ.z1; z += 0.6) out.push(boxAt(MEZZ.x1 - 0.04, MEZZ.y + 0.5, z, 0.04, 1, 0.04))
     return out
-  }, [x0, zBottom, zTop, h, rise, run, landing])
-  const lw = landing.x1 - landing.x0
-  const ld = landing.z1 - landing.z0
+  }, [x1, zBottom, zTop, h, rise, run])
+  const storage = useMemo(() => {
+    const out: THREE.Matrix4[] = []
+    for (let i = 0; i < 5; i++) out.push(boxAt(MEZZ.x0 + 0.9 + i * 0.85, MEZZ.y + 0.32, MEZZ.z0 + 0.6, 0.7, 0.6, 0.55))
+    for (let i = 0; i < 3; i++) out.push(boxAt(MEZZ.x0 + 1.2 + i * 0.85, MEZZ.y + 0.32, MEZZ.z0 + 1.5, 0.7, 0.6, 0.55))
+    return out
+  }, [])
   return (
     <group>
       <InstancedBoxes matrices={m} material={concreteBeamMat()} />
       <InstancedBoxes matrices={rail} material={darkSteelMat()} />
-      <mesh position={[(landing.x0 + landing.x1) / 2, h - 0.1, (landing.z0 + landing.z1) / 2]} material={concreteBeamMat()} castShadow receiveShadow>
-        <boxGeometry args={[lw, 0.2, ld]} />
+      <mesh position={[(MEZZ.x0 + MEZZ.x1) / 2, MEZZ.y - 0.1, (MEZZ.z0 + MEZZ.z1) / 2]} material={concreteBeamMat()} castShadow receiveShadow>
+        <boxGeometry args={[MEZZ.x1 - MEZZ.x0, 0.2, MEZZ.z1 - MEZZ.z0]} />
       </mesh>
-      <mesh position={[landing.x0 + 0.2, (h - 0.2) / 2, landing.z1 - 0.2]} material={columnMat()} castShadow>
-        <boxGeometry args={[0.35, h - 0.2, 0.35]} />
+      <mesh position={[MEZZ.x1 - 0.15, (MEZZ.y - 0.2) / 2, MEZZ.z1 - 0.15]} material={columnMat()} castShadow>
+        <boxGeometry args={[0.3, MEZZ.y - 0.2, 0.3]} />
       </mesh>
-      <InstancedBoxes
-        matrices={useMemo(
-          () => [0, 1, 2].map((i) => boxAt(landing.x0 + 0.7 + i * 0.75, h + 0.4, landing.z0 + 0.6, 0.6, 0.6, 0.5)),
-          [landing, h],
-        )}
-        material={palletMat()}
-      />
+      <InstancedBoxes matrices={storage} material={boxMat(1)} />
     </group>
   )
 }
+
+function Stacker() {
+  const body = useMemo(() => new THREE.MeshStandardMaterial({ color: '#e0441d', roughness: 0.45, metalness: 0.2 }), [])
+  const label = useMemo(() => new THREE.MeshStandardMaterial({ map: offerTex('wiebel', ['WIEBEL'], '#e0441d', '#ffffff'), roughness: 0.5 }), [])
+  const crates = useMemo(() => {
+    const out: THREE.Matrix4[] = []
+    for (let ly = 0; ly < 5; ly++) for (const dx of [-0.2, 0.2]) for (const dz of [-0.45, -0.95]) out.push(boxAt(dx, 0.3 + ly * 0.31, dz, 0.38, 0.3, 0.48))
+    return out
+  }, [])
+  const blue = useMemo(() => [...Array(20)].map(() => QUILMES), [])
+  return (
+    <group position={[STACKER.x, 0, STACKER.z]} rotation-y={STACKER.rotY}>
+      <mesh position={[0, 0.55, 0.35]} material={body} castShadow receiveShadow>
+        <boxGeometry args={[0.8, 1.0, 0.75]} />
+      </mesh>
+      <mesh position={[0, 0.65, 0.735]} material={label}>
+        <planeGeometry args={[0.7, 0.32]} />
+      </mesh>
+      <mesh position={[0, 1.08, 0.35]} material={rubberMat()}>
+        <boxGeometry args={[0.82, 0.06, 0.77]} />
+      </mesh>
+      {[-0.3, 0.3].map((x) => (
+        <mesh key={x} position={[x, 1.35, 0.0]} material={darkSteelMat()} castShadow>
+          <boxGeometry args={[0.1, 2.5, 0.12]} />
+        </mesh>
+      ))}
+      <mesh position={[0, 2.55, 0.0]} material={darkSteelMat()}>
+        <boxGeometry args={[0.72, 0.08, 0.12]} />
+      </mesh>
+      {[-0.2, 0.2].map((x) => (
+        <mesh key={x} position={[x, 0.08, -0.65]} material={darkSteelMat()} castShadow>
+          <boxGeometry args={[0.12, 0.06, 1.15]} />
+        </mesh>
+      ))}
+      <mesh position={[0, 1.15, 0.85]} rotation-x={0.6} material={darkSteelMat()}>
+        <boxGeometry args={[0.05, 0.9, 0.05]} />
+      </mesh>
+      <InstancedBoxes matrices={crates} colors={blue} material={crateMatShared()} />
+    </group>
+  )
+}
+
+function Despacho() {
+  const bim = useStore((s) => s.bim)
+  return (
+    <group>
+      <mesh position={[-0.7, 0.45, -12.1]} material={plankMat(2, 1)} castShadow receiveShadow>
+        <boxGeometry args={[2.2, 0.9, 1.0]} />
+      </mesh>
+      <mesh position={[-1.3, 0.98, -12.2]} material={boxMat(0)} castShadow>
+        <boxGeometry args={[0.5, 0.18, 0.4]} />
+      </mesh>
+      <group position={[0.8, 0, -9.6]} rotation-y={0.4}>
+        {[-0.2, 0.2].map((x) => (
+          <mesh key={x} position={[x, 0.06, -0.55]} material={yellowMat()} castShadow>
+            <boxGeometry args={[0.16, 0.08, 1.15]} />
+          </mesh>
+        ))}
+        <mesh position={[0, 0.65, 0.1]} rotation-x={0.25} material={darkSteelMat()}>
+          <boxGeometry args={[0.05, 1.1, 0.05]} />
+        </mesh>
+      </group>
+      {!bim && (
+        <mesh position={[1.2, 1.8, -IN_Z + 0.04]} material={shutterMat(3.6, 3.6)} castShadow>
+          <boxGeometry args={[3.6, 3.6, 0.05]} />
+        </mesh>
+      )}
+      <LightPanel id="desp" lines={['DESPACHO', 'Carga y descarga · Vehículos']} style="zone" size={[2.4, 0.6]} position={[1.2, 3.95, -IN_Z + 0.1]} glow={0.8} res={[900, 225]} />
+    </group>
+  )
+}
+
+function Lamps() {
+  return (
+    <group>
+      {[11, 5.5, 0, -5.5, -11].map((z) => (
+        <group key={z}>
+          <mesh position={[-1.0, SLAB_Y - BEAM_TOP, z + 2.5]}>
+            <boxGeometry args={[1.2, 0.05, 0.3]} />
+            <meshStandardMaterial color="#ffffff" emissive="#f4f7ff" emissiveIntensity={2.4} toneMapped={false} />
+          </mesh>
+          <pointLight position={[-1.0, SLAB_Y - 0.4, z + 2.5]} intensity={14} distance={13} decay={1.5} color="#f3f5f8" />
+        </group>
+      ))}
+    </group>
+  )
+}
+const BEAM_TOP = 0.06
+
+export function RealSite() {
+  return (
+    <group>
+      <Wainscot />
+      <ShelfRun />
+      <BevPallets />
+      <CrateWall />
+      <Office />
+      <Salon />
+      <Stairs />
+      <Van />
+      <Stacker />
+      <Despacho />
+      <Lamps />
+      <PhotoMural photo="gal_1" position={[IN_X - 0.06, 3.35, -1.8]} rotationY={-Math.PI / 2} height={1.25} />
+      <PhotoMural photo="rel_4" position={[-3.4, 3.2, -IN_Z + 0.06]} height={1.25} />
+    </group>
+  )
+}
+void COL_Z
 
 function Van() {
   const paint = useMemo(() => new THREE.MeshPhysicalMaterial({ color: '#f2f3f1', metalness: 0.35, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1 }), [])
@@ -307,83 +577,6 @@ function Van() {
   )
 }
 
-function Wainscot() {
-  const bim = useStore((s) => s.bim)
-  if (bim) return null
-  const h = 2.9
-  return (
-    <group>
-      <mesh position={[-HALF_W + 0.03, h / 2, -2.5]} rotation-y={Math.PI / 2} material={plankMat(7, 1.4)} receiveShadow>
-        <planeGeometry args={[15, h]} />
-      </mesh>
-      <mesh position={[HALF_W - 0.03, h / 2, 0]} rotation-y={-Math.PI / 2} material={plankMat(9, 1.4)} receiveShadow>
-        <planeGeometry args={[20, h]} />
-      </mesh>
-    </group>
-  )
-}
-
-function Crates() {
-  const mat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.55 }), [])
-  const { m, c } = useMemo(() => {
-    const m: THREE.Matrix4[] = []
-    const c: THREE.Color[] = []
-    const blue = new THREE.Color('#1d5eaa')
-    const red = new THREE.Color('#c3202b')
-    for (let ix = 0; ix < 7; ix++)
-      for (let iz = 0; iz < 3; iz++)
-        for (let iy = 0; iy < 6; iy++) {
-          m.push(boxAt(2.55 + ix * 0.5, 0.16 + iy * 0.31, -9.55 + iz * 0.4, 0.48, 0.3, 0.38))
-          c.push(ix < 5 ? blue : red)
-        }
-    return { m, c }
-  }, [])
-  return <InstancedBoxes matrices={m} material={mat} colors={c} />
-}
-
-function SalonCeiling() {
-  const bim = useStore((s) => s.bim)
-  if (bim) return null
-  return (
-    <mesh position={[-11.8, 3.18, 7.7]} rotation-x={Math.PI / 2} material={plankMat(4, 2)}>
-      <planeGeometry args={[6.4, 4.6]} />
-    </mesh>
-  )
-}
-
-function BevPallets() {
-  const mats = useMemo(() => [0, 1, 2, 3].map((v) => new THREE.MeshStandardMaterial({ map: bevPackTex(v), roughness: 0.35, metalness: 0.05 })), [])
-  return (
-    <group>
-      {BEV_PALLETS.map(([x, z], i) => (
-        <group key={i} position={[x, 0, z]}>
-          <mesh position-y={0.075} material={palletMat()} castShadow receiveShadow>
-            <boxGeometry args={[1.2, 0.15, 1.0]} />
-          </mesh>
-          <mesh position-y={0.15 + 0.6} material={mats[i % 4]} castShadow receiveShadow>
-            <boxGeometry args={[1.16, 1.2, 0.96]} />
-          </mesh>
-          {i >= 4 && (
-            <group position-y={1.35}>
-              <mesh position-y={0.075} material={palletMat()} castShadow receiveShadow>
-                <boxGeometry args={[1.2, 0.15, 1.0]} />
-              </mesh>
-              <mesh position-y={0.15 + 0.6} material={mats[(i + 2) % 4]} castShadow receiveShadow>
-                <boxGeometry args={[1.16, 1.2, 0.96]} />
-              </mesh>
-            </group>
-          )}
-          {i < 4 && i % 2 === 0 && (
-            <mesh position-y={1.35 + 0.15} material={mats[(i + 1) % 4]} castShadow>
-              <boxGeometry args={[1.16, 0.3, 0.96]} />
-            </mesh>
-          )}
-        </group>
-      ))}
-    </group>
-  )
-}
-
 function ShelfProducts({ position, rotationY, width, levels, seed, bottles }: { position: [number, number, number]; rotationY: number; width: number; levels: number[]; seed: number; bottles: boolean }) {
   const ref = useRef<THREE.InstancedMesh>(null)
   const items = useMemo(() => {
@@ -444,133 +637,3 @@ function Shelving({ position, rotationY, width, white, seed, bottles }: { positi
   )
 }
 
-function Commercial() {
-  const zw = 5.36
-  const candyA = useMemo(() => new THREE.MeshStandardMaterial({ color: '#e94b7a', roughness: 0.5 }), [])
-  const candyB = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f5b83d', roughness: 0.5 }), [])
-  const fridgeMat = useMemo(() => new THREE.MeshStandardMaterial({ color: '#c41820', metalness: 0.3, roughness: 0.4 }), [])
-  return (
-    <group>
-      <mesh position={[-11.75, 1.6, 5.37]} material={plankMat(4, 2)}>
-        <planeGeometry args={[6.3, 3.2]} />
-      </mesh>
-      <Shelving position={[-12.6, 0, 5.62]} rotationY={0} width={2.4} white={false} seed={11} bottles={false} />
-      <group position={[-10.6, 2.75, zw + 0.06]}>
-        <mesh material={darkSteelMat()}>
-          <boxGeometry args={[1.12, 0.82, 0.1]} />
-        </mesh>
-        <PhotoCrop name="lucky" width={1.02} position={[0, 0, 0.055]} glow={0.9} />
-      </group>
-      <PhotoCrop name="atencion" height={0.78} position={[-11.85, 0.55, 6.97]} glow={0.35} />
-      <PhotoCrop name="personal" height={0.5} position={[-10.85, 0.62, 6.97]} glow={0.35} />
-      <group position={[-10.2, 1.16, 6.86]}>
-        <mesh position-y={0.24} material={whiteMat()}>
-          <boxGeometry args={[0.26, 0.5, 0.02]} />
-        </mesh>
-        <PhotoCrop name="filmando" height={0.46} position={[0, 0.24, 0.012]} glow={0.4} />
-      </group>
-      <group position={[-13.0, 0, 6.75]}>
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <group key={i} position={[0, 0.25 + i * 0.22, -i * 0.04]}>
-            <mesh rotation-x={-0.35} material={glassMat()}>
-              <boxGeometry args={[0.55, 0.2, 0.32]} />
-            </mesh>
-            <mesh position-y={-0.04} material={i % 2 ? candyA : candyB}>
-              <boxGeometry args={[0.5, 0.07, 0.26]} />
-            </mesh>
-          </group>
-        ))}
-        <mesh position={[0, 0.7, -0.22]} material={darkSteelMat()}>
-          <boxGeometry args={[0.58, 1.4, 0.03]} />
-        </mesh>
-      </group>
-      <group position={[6.6, 0, 9.55]} rotation-y={Math.PI}>
-        {[7.55, 6.8].map((x) => (
-          <group key={x} position={[x, 0, 0]}>
-            <mesh position-y={1.0} material={fridgeMat} castShadow>
-              <boxGeometry args={[0.72, 2.0, 0.7]} />
-            </mesh>
-            <PhotoCrop name="fridge" height={1.75} position={[0, 1.0, 0.356]} glow={0.6} />
-          </group>
-        ))}
-        <group position={[5.45, 0, 0]}>
-          <mesh position-y={0.42} material={whiteMat()} castShadow>
-            <boxGeometry args={[1.3, 0.84, 0.7]} />
-          </mesh>
-          <PhotoCrop name="freezer" height={0.84} position={[0, 0.42, 0.356]} glow={0.35} />
-          <mesh position-y={0.87} material={glassMat()}>
-            <boxGeometry args={[1.26, 0.08, 0.66]} />
-          </mesh>
-        </group>
-      </group>
-      <mesh position={[-11.4, 0.55, 6.6]} material={plankMat(2, 1)} castShadow receiveShadow>
-        <boxGeometry args={[2.4, 1.1, 0.72]} />
-      </mesh>
-      <group position={[-9.25, 0, 6.6]}>
-        <mesh position-y={0.4} material={whiteMat()} castShadow receiveShadow>
-          <boxGeometry args={[1.9, 0.8, 0.72]} />
-        </mesh>
-        <mesh position-y={0.95} material={glassMat()}>
-          <boxGeometry args={[1.86, 0.3, 0.68]} />
-        </mesh>
-        <InstancedBoxes
-          matrices={useMemo(() => Array.from({ length: 10 }, (_, i) => boxAt(-0.8 + i * 0.18, 0.88, 0, 0.12, 0.14, 0.12)), [])}
-          material={useMemo(() => new THREE.MeshStandardMaterial({ color: '#f5c542', roughness: 0.5 }), [])}
-        />
-      </group>
-      {[-12.0, -10.3].map((x) => (
-        <group key={x} position={[x, 1.16, 6.78]}>
-          <mesh position-y={0.48} material={glassMat()}>
-            <boxGeometry args={[1.3, 0.95, 0.015]} />
-          </mesh>
-          {[-0.65, 0.65].map((dx) => (
-            <mesh key={dx} position={[dx, 0.48, 0]} material={darkSteelMat()}>
-              <boxGeometry args={[0.025, 0.97, 0.03]} />
-            </mesh>
-          ))}
-          <mesh position={[0, 0.03, 0.05]} material={darkSteelMat()}>
-            <boxGeometry args={[0.4, 0.06, 0.12]} />
-          </mesh>
-        </group>
-      ))}
-      <group position={[-11.0, 1.16, 6.5]}>
-        <mesh position-y={0.06} material={whiteMat()}>
-          <boxGeometry args={[0.4, 0.12, 0.36]} />
-        </mesh>
-        <mesh position-y={0.4} material={darkSteelMat()}>
-          <boxGeometry args={[0.04, 0.5, 0.04]} />
-        </mesh>
-        <mesh position={[0, 0.68, 0]}>
-          <boxGeometry args={[0.34, 0.14, 0.05]} />
-          <meshStandardMaterial color="#0a3b2b" emissive="#39ff9c" emissiveIntensity={0.8} />
-        </mesh>
-      </group>
-      <Shelving position={[-14.6, 0, 7.8]} rotationY={Math.PI / 2} width={3.6} white seed={23} bottles />
-      <Shelving position={[-12.2, 0, 9.5]} rotationY={Math.PI} width={2.2} white seed={41} bottles />
-    </group>
-  )
-}
-
-export function RealSite() {
-  return (
-    <group>
-      <Facade />
-      <ConcreteFrame />
-      <Stairs />
-      <Van />
-      <BevPallets />
-      <Commercial />
-      <Wainscot />
-      {WALL_SHELVES.map(([z0, z1], i) => (
-        <Shelving key={i} position={[-14.5, 0, (z0 + z1) / 2]} rotationY={Math.PI / 2} width={z1 - z0 - 0.1} white={false} seed={40 + i} bottles={i === 1} />
-      ))}
-      <Crates />
-      <SalonCeiling />
-      <PhotoMural photo="ext_4" position={[8.6, 2.2, HALF_D + WALL_T + 0.08]} height={1.9} />
-      <PhotoMural photo="gal_4" position={[-HALF_W + 0.06, 4.6, -2.7]} rotationY={Math.PI / 2} height={1.9} />
-      <PhotoMural photo="sal_2" position={[HALF_W - 0.06, 2.4, 2.4]} rotationY={-Math.PI / 2} height={1.9} />
-      <PhotoMural photo="gal_1" position={[-HALF_W + 0.06, 4.6, 1.9]} rotationY={Math.PI / 2} height={1.9} />
-      <PhotoMural photo="gal_3" position={[-12.6, 2.6, -HALF_D + 0.06]} height={1.9} />
-    </group>
-  )
-}

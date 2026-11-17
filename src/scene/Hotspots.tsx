@@ -2,12 +2,13 @@ import { Billboard, Html } from '@react-three/drei'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
-import { HOTSPOTS, PHOTOS, PHOTO_KEYS, photoSrc, thumbSrc, type Hotspot, type PhotoKey } from '../data'
+import { HOTSPOTS, PHOTOS, PHOTO_KEYS, mediaIndex, photoSrc, thumbSrc, type Hotspot, type PhotoKey } from '../data'
 import { useStore } from '../store'
 
 function Marker({ h }: { h: Hotspot }) {
   const active = useStore((s) => s.hotspot === h.id)
   const aimed = useStore((s) => s.aimHotspot === h.id)
+  const cad = useStore((s) => s.cadLabels)
   const ring = useRef<THREE.Mesh>(null)
   useFrame(({ clock }) => {
     if (!ring.current) return
@@ -44,7 +45,7 @@ function Marker({ h }: { h: Hotspot }) {
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       <Billboard>
-        <group scale={big ? 1.2 : 1}>
+        <group scale={big ? 1.2 : cad ? 1 : 0.7}>
           <mesh>
             <circleGeometry args={[0.055, 32]} />
             <meshBasicMaterial color={col} toneMapped={false} />
@@ -67,6 +68,7 @@ function Marker({ h }: { h: Hotspot }) {
           </mesh>
         </group>
       </Billboard>
+      {(cad || big) && (
       <Html position={[0.3, 0.3, 0]} zIndexRange={[6, 0]} style={{ pointerEvents: 'none' }}>
         <div className="flex items-stretch whitespace-nowrap border border-mint/45 bg-[#0b0f14]/85 font-mono text-[10px] leading-[18px] shadow-lg">
           <span className="bg-mint px-1.5 font-bold text-[#0b0f14]">{h.id}</span>
@@ -76,6 +78,7 @@ function Marker({ h }: { h: Hotspot }) {
           </span>
         </div>
       </Html>
+      )}
       {active && (
         <Html position={[0, 0.3, 0]} zIndexRange={[40, 30]} style={{ pointerEvents: 'auto' }}>
           <div className="glass relative ml-6 w-80 -translate-y-1/2 rounded-[4px] p-4 text-sm text-slate-100">
@@ -115,7 +118,7 @@ function PhotoCompare({ h }: { h: Hotspot }) {
     <div className="mt-3 border-t border-white/10 pt-2">
       <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-mint/80">Relevamiento Fotográfico Real vs. Gemelo Digital XR</div>
       <div className="relative overflow-hidden rounded-[4px] ring-1 ring-white/10">
-        <img src={photoSrc(sel)} alt={p.caption} className="h-44 w-full object-cover" draggable={false} />
+        <img src={photoSrc(sel)} alt={p.caption} className="h-44 w-full cursor-zoom-in object-cover" draggable={false} onClick={() => useStore.getState().openViewer(mediaIndex(sel), true)} />
         <span className="absolute top-1.5 left-1.5 rounded bg-bordo/90 px-1.5 py-0.5 text-[10px] font-bold text-mint">FOTO REAL</span>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pt-5 pb-1.5 text-[11px] leading-snug text-white">{p.caption}</div>
       </div>
@@ -125,6 +128,16 @@ function PhotoCompare({ h }: { h: Hotspot }) {
             <img src={thumbSrc(k)} alt={PHOTOS[k].short} className="h-10 w-full object-cover" draggable={false} />
           </button>
         ))}
+      </div>
+      <div className="mt-1.5 flex gap-1">
+        <button onClick={() => useStore.getState().openViewer(mediaIndex(sel), true)} className="flex-1 rounded-[3px] border border-mint/50 bg-mint/10 px-2 py-1 text-[11px] font-semibold text-mint hover:bg-mint/25">
+          ⤢ Visor 1:1 · comparar con el 3D
+        </button>
+        {PHOTOS[h.photo].zone === 'gal' && (
+          <button onClick={() => useStore.getState().openViewer(0, true)} className="rounded-[3px] border border-white/15 bg-white/5 px-2 py-1 text-[11px] font-semibold text-white hover:bg-white/15">
+            ▶ Video real
+          </button>
+        )}
       </div>
       <p className="mt-2 rounded-[3px] bg-mint/10 px-2 py-1.5 text-[11px] leading-snug text-slate-200">
         <span className="font-bold text-mint">Gemelo XR: </span>
