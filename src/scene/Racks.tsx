@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { RACK_BAYS, RACK_BAY_LEN, RACK_BEAMS, RACK_H, RACK_LEVELS, RACK_ROWS, RACK_Z0, RACK_Z1 } from '../data'
-import { boxMat, palletMat, rackBeamMat, rackUprightMat, yellowMat } from '../materials'
+import { boxMat, palletMat, woodShelfMat, yellowMat } from '../materials'
 import { rng } from '../textures'
 import { InstancedBoxes, beam, boxAt } from './Instanced'
 
@@ -34,6 +34,7 @@ export function Racks() {
     const uprights: THREE.Matrix4[] = []
     const beams: THREE.Matrix4[] = []
     const guards: THREE.Matrix4[] = []
+    const decks: THREE.Matrix4[] = []
     const stock: Stock = { pallets: [], boxes: [[], []], tints: [[], []] }
     RACK_ROWS.forEach((c) => {
       ;[-1, 1].forEach((side) => {
@@ -41,7 +42,7 @@ export function Racks() {
         const faces = [rx - 0.5, rx + 0.5]
         for (let k = 0; k <= RACK_BAYS; k++) {
           const z = RACK_Z0 + k * RACK_BAY_LEN
-          faces.forEach((fx) => uprights.push(boxAt(fx, RACK_H / 2, z, 0.09, RACK_H, 0.09)))
+          faces.forEach((fx) => uprights.push(boxAt(fx, RACK_H / 2, z, 0.1, RACK_H, 0.1)))
           const steps = 6
           for (let s = 0; s < steps; s++) {
             const y0 = 0.15 + (s * (RACK_H - 0.3)) / steps
@@ -53,7 +54,10 @@ export function Racks() {
         }
         for (let b = 0; b < RACK_BAYS; b++) {
           const z0 = RACK_Z0 + b * RACK_BAY_LEN
-          RACK_BEAMS.forEach((y) => faces.forEach((fx) => beams.push(boxAt(fx, y, z0 + RACK_BAY_LEN / 2, 0.06, 0.13, RACK_BAY_LEN - 0.09))))
+          RACK_BEAMS.forEach((y) => {
+            faces.forEach((fx) => beams.push(boxAt(fx, y, z0 + RACK_BAY_LEN / 2, 0.06, 0.13, RACK_BAY_LEN - 0.09)))
+            decks.push(boxAt(rx, y + 0.085, z0 + RACK_BAY_LEN / 2, 1.04, 0.035, RACK_BAY_LEN - 0.1))
+          })
           RACK_LEVELS.forEach((ly, li) => {
             for (let p = 0; p < 2; p++) {
               if (r() < 0.07) continue
@@ -69,16 +73,17 @@ export function Racks() {
       })
     })
     const staged: [number, number, number][] = [
-      [6.2, -8.7, 0.1], [11.0, 7.3, 0], [12.5, 7.3, 0.03],
+      [6.2, -8.7, 0.1], [12.5, 7.3, 0.03],
     ]
     staged.forEach(([x, z, ry]) => fillPallet(stock, r, x, 0, z, 4, ry))
-    return { uprights, beams, guards, stock }
+    return { uprights, beams, guards, decks, stock }
   }, [])
 
   return (
     <group>
-      <InstancedBoxes matrices={data.uprights} material={rackUprightMat()} />
-      <InstancedBoxes matrices={data.beams} material={rackBeamMat()} />
+      <InstancedBoxes matrices={data.uprights} material={woodShelfMat(0)} />
+      <InstancedBoxes matrices={data.beams} material={woodShelfMat(1)} />
+      <InstancedBoxes matrices={data.decks} material={woodShelfMat(2)} />
       <InstancedBoxes matrices={data.guards} material={yellowMat()} />
       <InstancedBoxes matrices={data.stock.pallets} material={palletMat()} />
       <InstancedBoxes matrices={data.stock.boxes[0]} colors={data.stock.tints[0]} material={boxMat(0)} />

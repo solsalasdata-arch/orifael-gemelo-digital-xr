@@ -192,7 +192,8 @@ function Columns() {
     const p: [number, number][] = []
     TRUSS_X.forEach((x) => {
       const cx = Math.max(-HALF_W + 0.2, Math.min(HALF_W - 0.2, x))
-      p.push([cx, HALF_D - 0.18], [cx, -HALF_D + 0.18])
+      if (Math.abs(cx - ENTRANCE.x) > ENTRANCE.w / 2 + 0.3) p.push([cx, HALF_D - 0.18])
+      if (DOCKS.every((d) => Math.abs(cx - d) > DOCK_W / 2 + 0.3)) p.push([cx, -HALF_D + 0.18])
     })
     ;[-5, 0, 5].forEach((z) => p.push([-HALF_W + 0.2, z], [HALF_W - 0.2, z]))
     return p

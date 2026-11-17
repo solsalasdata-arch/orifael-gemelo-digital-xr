@@ -78,3 +78,6 @@ export const bimSolidMat = () =>
 export const bimWireMat = () => once('bimWire', () => new THREE.MeshBasicMaterial({ color: BIM_COLOR, wireframe: true, toneMapped: false }))
 export const bimRoofMat = () =>
   once('bimRoof', () => new THREE.MeshBasicMaterial({ color: BIM_COLOR, transparent: true, opacity: 0.03, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }))
+
+export const woodShelfMat = (v: 0 | 1 | 2) =>
+  once(`woodShelf-${v}`, () => new THREE.MeshStandardMaterial({ map: repeated(woodTex(), 1, v === 0 ? 3 : 1), color: ['#8a6644', '#a07a52', '#b58c60'][v], roughness: 0.82 }))

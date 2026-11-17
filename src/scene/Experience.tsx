@@ -1,8 +1,8 @@
 import { Environment, Lightformer } from '@react-three/drei'
-import { useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
-import { BAY_CENTERS, BOTTOM_CHORD, SUN_DIR } from '../data'
+import { BAY_CENTERS, BOTTOM_CHORD, ORBIT_FOV, SUN_DIR, WALK_FOV } from '../data'
 import { useStore } from '../store'
 import { Building } from './Building'
 import { Dimensions } from './Dimensions'
@@ -73,6 +73,18 @@ function SkyDome() {
   )
 }
 
+function LensControl() {
+  useFrame(({ camera }, dt) => {
+    if (!(camera instanceof THREE.PerspectiveCamera) || useStore.getState().inXR) return
+    const { mode, flight } = useStore.getState()
+    const goal = (flight ? flight.toMode : mode) === 'orbit' ? ORBIT_FOV : WALK_FOV
+    if (Math.abs(camera.fov - goal) < 0.05) return
+    camera.fov = THREE.MathUtils.damp(camera.fov, goal, 3, dt)
+    camera.updateProjectionMatrix()
+  })
+  return null
+}
+
 function CameraInit() {
   const { camera } = useThree()
   useEffect(() => {
@@ -86,8 +98,9 @@ export function Experience() {
   return (
     <>
       <CameraInit />
+      <LensControl />
       <color attach="background" args={['#bfc2c5']} />
-      <fog attach="fog" args={['#c3c4c4', 70, 280]} />
+      <fog attach="fog" args={['#c3c4c4', 150, 520]} />
       <SkyDome />
       <Environment resolution={256} frames={1} environmentIntensity={0.7}>
         <Lightformer form="rect" intensity={3} position={[0, 8, 0]} rotation-x={Math.PI / 2} scale={[30, 6, 1]} />

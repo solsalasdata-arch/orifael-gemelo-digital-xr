@@ -304,10 +304,10 @@ function MiniMap() {
           <rect key={d} x={d - DOCK_W / 2} y={-10.2} width={DOCK_W} height={0.4} fill="#f2c230" opacity={0.8} />
         ))}
         {RACK_ROWS.map((c) => (
-          <rect key={c} x={c - RACK_HALF_DEPTH} y={RACK_Z0} width={RACK_HALF_DEPTH * 2} height={RACK_Z1 - RACK_Z0} fill="#1f4f8f" opacity={0.85} rx={0.15} />
+          <rect key={c} x={c - RACK_HALF_DEPTH} y={RACK_Z0} width={RACK_HALF_DEPTH * 2} height={RACK_Z1 - RACK_Z0} fill="#8a6644" opacity={0.9} rx={0.1} />
         ))}
         <rect x={-12.6} y={6.2} width={4.4} height={0.8} fill="#8a5a36" />
-        <rect x={PICKUP.x - 2.65} y={PICKUP.z - 0.93} width={5.3} height={1.86} fill="#c8102e" rx={0.4} />
+        <rect x={PICKUP.x - 2.65} y={PICKUP.z - 0.93} width={5.3} height={1.86} fill="#e8e8e8" rx={0.3} />
         <rect x={STAIRS.landing.x0} y={STAIRS.landing.z0} width={STAIRS.landing.x1 - STAIRS.landing.x0} height={STAIRS.landing.z1 - STAIRS.landing.z0} fill="#9a9792" />
         <rect x={STAIRS.x0} y={STAIRS.zTop} width={STAIRS.x1 - STAIRS.x0} height={STAIRS.zBottom - STAIRS.zTop} fill="#c4c1bb" />
         {BEV_PALLETS.map(([x, z]) => (
@@ -318,9 +318,9 @@ function MiniMap() {
         <text x={0} y={17.6} textAnchor="middle" fontSize={1.4} fill="#cbd5dc" fontWeight={700}>
           Gdor. Tello 437
         </text>
-        {[1, 2, 3].map((n, i) => (
-          <text key={n} x={-6 + i * 6} y={0.5} textAnchor="middle" fontSize={1.3} fill="#A8E6CF" fontWeight={800}>
-            P{n}
+        {[-7.8, 0, 7.25].map((x, i) => (
+          <text key={x} x={x} y={0.5} textAnchor="middle" fontSize={1.3} fill="#A8E6CF" fontWeight={800}>
+            {['P1', 'PC', 'P3'][i]}
           </text>
         ))}
         {HOTSPOTS.map((h) => (

@@ -16,7 +16,7 @@ export const TRUSS_X = [-15, -10, -5, 0, 5, 10, 15]
 export const BAY_CENTERS = [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5]
 export const SKYLIGHT_BAYS = [1, 2, 3, 4]
 
-export const RACK_ROWS = [-9, -3, 3, 9]
+export const RACK_ROWS = [-10.8, -4.8]
 export const RACK_Z0 = -5.5
 export const RACK_BAYS = 4
 export const RACK_BAY_LEN = 2.5
@@ -51,13 +51,15 @@ export type Waypoint = {
 }
 
 export const WAYPOINTS: Waypoint[] = [
-  { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Frente comercial y portón principal', pos: [0, EYE, 17], look: [0, 2.8, 4] },
-  { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Racks selectivos de 3 niveles', pos: [0, EYE, 5.8], look: [0, 1.9, -6] },
-  { id: 3, title: 'Estructura de Cubierta (Cabriadas)', subtitle: 'Plataforma elevadora a 5,8 m', pos: [-9.5, 5.8, 7.5], look: [2, 7.2, -2.5] },
-  { id: 4, title: 'Zona de Despacho', subtitle: 'Muelles, pick-up y pallets de bebidas', pos: [-0.6, EYE, -6.4], look: [-9.5, 1.3, -8.4] },
+  { id: 1, title: 'Acceso Gdor. Tello 437', subtitle: 'Frente comercial y portón principal', pos: [0, EYE, 12.4], look: [0, 2.6, 0] },
+  { id: 2, title: 'Pasillo Central de Stock', subtitle: 'Estanterías de madera a la izq. · bebidas a la der.', pos: [0, EYE, 7.2], look: [0, 1.6, -8] },
+  { id: 3, title: 'Estructura de Cubierta (Cabriadas)', subtitle: 'Vista elevada a 5,8 m sobre el pasillo central', pos: [-1.5, 5.8, 3.0], look: [2, 7.2, -6] },
+  { id: 4, title: 'Zona de Despacho', subtitle: 'Muelles, utilitario y camión al fondo', pos: [-0.6, EYE, -6.4], look: [-0.6, 1.6, -16] },
 ]
 
-export const ORBIT_VIEW = { pos: [-5, 44, 21] as V3, target: [-5, 0, 6] as V3 }
+export const ORBIT_VIEW = { pos: [-5, 96, 36] as V3, target: [-5, 0, 4] as V3 }
+export const ORBIT_FOV = 30
+export const WALK_FOV = 70
 
 export type Zone = 'ext' | 'sal' | 'gal' | 'ofi'
 export const ZONES: Record<Zone, string> = { ext: 'Exterior · Gdor. Tello', sal: 'Salón de ventas', gal: 'Galpón / depósito', ofi: 'Oficina' }
@@ -99,7 +101,7 @@ export const PHOTO_KEYS = Object.keys(PHOTOS) as PhotoKey[]
 
 export const PICKUP = { x: -9.6, z: -7.9, rotY: 0 }
 export const STAIRS = { x0: 13.6, x1: 14.85, zBottom: -3.4, zTop: -8.3, h: 3.4, landing: { x0: 12.0, x1: 14.85, z0: -10, z1: -8.3 } }
-export const BEV_PALLETS: [number, number][] = [[10.6, -7.0], [10.6, -8.6], [12.2, -6.8], [-4.4, -9.15], [-3.0, -9.15]]
+export const BEV_PALLETS: [number, number][] = [[10.6, -7.0], [10.6, -8.6], [-4.4, -9.15], [-3.0, -9.15], [4.0, -4.9], [4.0, -3.65], [4.0, -2.4], [4.0, -1.15], [4.0, 0.1], [4.0, 1.35], [4.0, 2.6], [4.0, 3.85], [5.35, -4.9], [5.35, -3.65], [5.35, -2.4], [5.35, -1.15], [5.35, 0.1], [5.35, 1.35], [5.35, 2.6], [5.35, 3.85], [9.15, -4.9], [9.15, -3.65], [9.15, -2.4], [9.15, -1.15], [9.15, 0.1], [9.15, 1.35], [9.15, 2.6], [9.15, 3.85], [10.5, -4.9], [10.5, -3.65], [10.5, -2.4], [10.5, -1.15], [10.5, 0.1], [10.5, 1.35], [10.5, 2.6], [10.5, 3.85]]
 
 export type Hotspot = {
   photo: PhotoKey
@@ -129,15 +131,15 @@ export const HOTSPOTS: Hotspot[] = [
   },
   {
     photo: 'gal_1',
-    twin: 'Racks con largueros naranjas y estibas de cajones Quilmes, como en el depósito relevado.',
+    twin: 'Estanterías de madera a la izquierda y estibas de pallets de bebidas a la derecha del pasillo central, como en el depósito relevado.',
     id: 'B',
     label: 'Pasillo 1',
     zone: 'Stock',
     title: 'Capacidad volumétrica',
     body: 'Capacidad volumétrica: 420 m³ de almacenamiento optimizado',
-    pos: [-6, 2.5, -0.5],
-    details: [['Racks', '4 filas · 3 niveles'], ['Posiciones pallet', '192'], ['Ancho de pasillo', '3,6 m']],
-    view: { pos: [-6, EYE, 4.6], look: [-6, 2.2, -0.5] },
+    pos: [-7.8, 2.5, -0.5],
+    details: [['Estanterías madera', '2 filas dobles · 3 niveles'], ['Pallets de bebidas', '32 en piso'], ['Pasillo central', '7,2 m']],
+    view: { pos: [-7.8, EYE, 4.8], look: [-7.8, 2.2, -0.5] },
   },
   {
     photo: 'sal_2',
@@ -159,9 +161,9 @@ export const HOTSPOTS: Hotspot[] = [
     zone: 'Acceso',
     title: 'Acceso Logístico',
     body: 'Acceso Logístico - Gdor. Tello 437, S.S. de Jujuy',
-    pos: [3.6, 2.6, 10.9],
+    pos: [1.4, 3.2, 9.6],
     details: [['Portón', '5,0 × 4,6 m'], ['Vereda', 'Gdor. Tello'], ['Ciudad', 'S. S. de Jujuy']],
-    view: { pos: [6.5, EYE, 15.5], look: [3.6, 2.4, 10.9] },
+    view: { pos: [0.4, EYE, 13.2], look: [1.4, 3.0, 9.6] },
   },
 ]
 
@@ -210,10 +212,11 @@ export function zoneAt(x: number, z: number): string {
     if (x < -6.5) return 'Carga vehicular · Pick-up'
     return 'Zona de Despacho / Carga'
   }
-  if (x > -7.8 && x < -4.2) return 'Pasillo 1'
-  if (x > -1.8 && x < 1.8) return 'Pasillo 2 · Central'
-  if (x > 4.2 && x < 7.8) return 'Pasillo 3'
-  return 'Área de estanterías'
+  if (x > -9.6 && x < -6.0) return 'Pasillo 1 · Estanterías'
+  if (x >= -3.6 && x <= 3.3) return 'Pasillo Central'
+  if (x > 6.0 && x < 8.5) return 'Pasillo 3 · Bebidas'
+  if (x > 11.2) return 'Lateral · Bebidas'
+  return x < 0 ? 'Estanterías de madera' : 'Pallets de bebidas'
 }
 
 export const METRICS = [
@@ -222,7 +225,7 @@ export const METRICS = [
   { k: 'Luz libre (cabriadas)', v: '20 m' },
   { k: 'Altura cumbrera / alero', v: '8,0 / 6,9 m' },
   { k: 'Volumen en racks', v: '420 m³' },
-  { k: 'Posiciones pallet', v: '192' },
-  { k: 'Pasillos principales', v: '3 × 3,6 m' },
+  { k: 'Posiciones pallet', v: '96 + 32 en piso' },
+  { k: 'Pasillo central', v: '7,2 m + 2 laterales' },
   { k: 'Muelles de carga', v: '3' },
 ]

@@ -80,12 +80,11 @@ function Signage() {
           res={[1536, 300]}
         />
       </Hanging>
-      {RACK_ROWS.slice(0, 3).map((c, i) => {
-        const x = c + 3
+      {[-7.8, 0, 7.25].map((x, i) => {
         const labels = [
-          ['1', 'PASILLO 1', 'Almacén general · Secos'],
-          ['2', 'PASILLO 2 · CENTRAL', 'Bebidas y alto rotación'],
-          ['3', 'PASILLO 3', 'Limpieza y bazar'],
+          ['1', 'PASILLO 1', 'Estanterías de madera · Secos'],
+          ['2', 'PASILLO CENTRAL', 'Circulación principal'],
+          ['3', 'PASILLO 3', 'Pallets de bebidas'],
         ][i]
         return (
           <Hanging key={i} x={x} z={RACK_Z1 + 0.6} y={4.9} half={0.9}>

@@ -262,7 +262,7 @@ function Orbit() {
       enableDamping
       dampingFactor={0.08}
       minDistance={6}
-      maxDistance={95}
+      maxDistance={220}
       maxPolarAngle={Math.PI / 2 - 0.04}
     />
   )
