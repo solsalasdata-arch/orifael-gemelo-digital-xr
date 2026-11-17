@@ -2,7 +2,7 @@ import { Billboard, Html } from '@react-three/drei'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
-import { HOTSPOTS, PHOTOS, PHOTO_KEYS, type Hotspot, type PhotoKey } from '../data'
+import { HOTSPOTS, PHOTOS, PHOTO_KEYS, photoSrc, thumbSrc, type Hotspot, type PhotoKey } from '../data'
 import { useStore } from '../store'
 
 function Marker({ h }: { h: Hotspot }) {
@@ -92,19 +92,19 @@ function Marker({ h }: { h: Hotspot }) {
 function PhotoCompare({ h }: { h: Hotspot }) {
   const [sel, setSel] = useState<PhotoKey>(h.photo)
   const p = PHOTOS[sel]
-  const url = (k: PhotoKey) => `${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`
+  const keys = PHOTO_KEYS.filter((k) => PHOTOS[k].zone === PHOTOS[h.photo].zone)
   return (
     <div className="mt-3 border-t border-white/10 pt-2">
       <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-mint/80">Relevamiento Fotográfico Real vs. Gemelo Digital XR</div>
       <div className="relative overflow-hidden rounded-xl ring-1 ring-white/10">
-        <img src={url(sel)} alt={p.caption} className="h-44 w-full object-cover" draggable={false} />
+        <img src={photoSrc(sel)} alt={p.caption} className="h-44 w-full object-cover" draggable={false} />
         <span className="absolute top-1.5 left-1.5 rounded bg-bordo/90 px-1.5 py-0.5 text-[10px] font-bold text-mint">FOTO REAL</span>
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pt-5 pb-1.5 text-[11px] leading-snug text-white">{p.caption}</div>
       </div>
       <div className="mt-1.5 grid grid-cols-5 gap-1">
-        {PHOTO_KEYS.map((k) => (
+        {keys.map((k) => (
           <button key={k} onClick={() => setSel(k)} className={`overflow-hidden rounded-md ring-2 transition ${k === sel ? 'ring-mint' : 'ring-transparent opacity-60 hover:opacity-100'}`}>
-            <img src={url(k)} alt={PHOTOS[k].short} className="h-10 w-full object-cover" draggable={false} />
+            <img src={thumbSrc(k)} alt={PHOTOS[k].short} className="h-10 w-full object-cover" draggable={false} />
           </button>
         ))}
       </div>

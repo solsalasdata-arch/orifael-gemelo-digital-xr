@@ -63,8 +63,8 @@ export const whiteMat = () => once('white', () => new THREE.MeshStandardMaterial
 export const glassMat = () =>
   once('glass', () => new THREE.MeshPhysicalMaterial({ color: '#cfe9f5', transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0.1, depthWrite: false }))
 
-export const rackUprightMat = () => once('rackU', () => new THREE.MeshStandardMaterial({ color: '#1f4f8f', metalness: 0.55, roughness: 0.4 }))
-export const rackBeamMat = () => once('rackB', () => new THREE.MeshStandardMaterial({ color: '#e46f1c', metalness: 0.45, roughness: 0.4 }))
+export const rackUprightMat = () => once('rackU', () => new THREE.MeshStandardMaterial({ color: '#8f989f', metalness: 0.6, roughness: 0.4 }))
+export const rackBeamMat = () => once('rackB', () => new THREE.MeshStandardMaterial({ color: '#e0481b', metalness: 0.4, roughness: 0.4 }))
 export const yellowMat = () => once('yellow', () => new THREE.MeshStandardMaterial({ color: '#f2c230', roughness: 0.5 }))
 export const palletMat = () => once('pallet', () => new THREE.MeshStandardMaterial({ map: woodTex(), roughness: 0.85 }))
 export const boxMat = (v: 0 | 1) => once(`box-${v}`, () => new THREE.MeshStandardMaterial({ map: boxTex(v), roughness: 0.85 }))

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { HOTSPOTS, PHOTOS, PHOTO_KEYS, PICKUP, STAIRS, BEV_PALLETS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE } from '../data'
+import { createPortal } from 'react-dom'
+import { HOTSPOTS, PHOTOS, PHOTO_KEYS, ZONES, ZONE_HOTSPOT, photoSrc, thumbSrc, type Zone, PICKUP, STAIRS, BEV_PALLETS, METRICS, RACK_ROWS, RACK_HALF_DEPTH, RACK_Z0, RACK_Z1, WAYPOINTS, zoneAt, DOCKS, DOCK_W, ENTRANCE } from '../data'
 import { isBlocked } from '../scene/Navigation'
 import { useStore } from '../store'
 import { xrStore } from '../xr'
@@ -58,6 +59,69 @@ function Stats() {
         <div className="text-lg font-bold text-white">{s.calls}</div>
       </div>
     </div>
+  )
+}
+
+function PhotoGallery() {
+  const [idx, setIdx] = useState<number | null>(null)
+  const zones = Object.keys(ZONES) as Zone[]
+  const n = PHOTO_KEYS.length
+  const k = idx === null ? null : PHOTO_KEYS[idx]
+  useEffect(() => {
+    if (idx === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIdx(null)
+      if (e.key === 'ArrowRight') setIdx((i) => (i === null ? i : (i + 1) % n))
+      if (e.key === 'ArrowLeft') setIdx((i) => (i === null ? i : (i + n - 1) % n))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [idx, n])
+  return (
+    <Section title={`Relevamiento fotográfico real · ${n} vistas`}>
+      {zones.map((z) => (
+        <div key={z} className="mb-1.5">
+          <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            <span>{ZONES[z]}</span>
+            <button onClick={() => useStore.getState().openHotspot(ZONE_HOTSPOT[z], true)} className="rounded bg-mint/15 px-1.5 text-[9px] font-bold text-mint hover:bg-mint/30">
+              Hotspot {ZONE_HOTSPOT[z]}
+            </button>
+          </div>
+          <div className="grid grid-cols-5 gap-1">
+            {PHOTO_KEYS.map((pk, i) =>
+              PHOTOS[pk].zone !== z ? null : (
+                <button key={pk} title={PHOTOS[pk].caption} onClick={() => setIdx(i)} className="group overflow-hidden rounded-md ring-1 ring-white/10 hover:ring-mint">
+                  <img src={thumbSrc(pk)} alt={PHOTOS[pk].short} loading="lazy" className="h-10 w-full object-cover transition group-hover:scale-105" draggable={false} />
+                </button>
+              ),
+            )}
+          </div>
+        </div>
+      ))}
+      <p className="text-[10.5px] text-slate-400">Clic para ampliar. Rostros y patentes difuminados.</p>
+      {k !== null &&
+        idx !== null &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4" onClick={() => setIdx(null)}>
+            <div className="relative max-h-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
+              <img src={photoSrc(k)} alt={PHOTOS[k].caption} className="max-h-[80vh] w-auto rounded-xl ring-1 ring-white/20" draggable={false} />
+              <div className="mt-2 flex items-center justify-between gap-3 text-sm text-white">
+                <div>
+                  <span className="mr-2 rounded bg-bordo px-1.5 py-0.5 text-[11px] font-bold text-mint">{ZONES[PHOTOS[k].zone]}</span>
+                  {PHOTOS[k].caption}
+                </div>
+                <span className="font-mono text-xs text-slate-400">
+                  {idx + 1} / {n}
+                </span>
+              </div>
+              <button onClick={() => setIdx((idx + n - 1) % n)} className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">‹</button>
+              <button onClick={() => setIdx((idx + 1) % n)} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/60 px-3 py-2 text-xl text-white hover:bg-black/80">›</button>
+              <button onClick={() => setIdx(null)} className="absolute top-2 right-2 rounded-full bg-black/60 px-2.5 py-1 text-white hover:bg-black/80">✕</button>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </Section>
   )
 }
 
@@ -157,25 +221,7 @@ function Panel() {
         </div>
       </Section>
 
-      <Section title="Relevamiento fotográfico real">
-        <div className="grid grid-cols-5 gap-1.5">
-          {PHOTO_KEYS.map((k) => {
-            const h = HOTSPOTS.find((x) => x.id === PHOTOS[k].hotspot)
-            return (
-              <button
-                key={k}
-                title={PHOTOS[k].caption}
-                onClick={() => h && st().openHotspot(h.id, true)}
-                className="group relative overflow-hidden rounded-lg ring-1 ring-white/10 hover:ring-mint"
-              >
-                <img src={`${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`} alt={PHOTOS[k].short} className="h-14 w-full object-cover transition group-hover:scale-105" draggable={false} />
-                {h && <span className="absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-mint text-[9px] font-extrabold text-[#0d1a14]">{h.id}</span>}
-              </button>
-            )
-          })}
-        </div>
-        <p className="mt-1.5 text-[10.5px] text-slate-400">Fotos del sitio aplicadas en murales 3D y en las tarjetas de hotspots.</p>
-      </Section>
+      <PhotoGallery />
 
       <Section title="Métricas espaciales">
         <div className="grid grid-cols-2 gap-1.5">

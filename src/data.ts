@@ -59,15 +59,42 @@ export const WAYPOINTS: Waypoint[] = [
 
 export const ORBIT_VIEW = { pos: [30, 24, 31] as V3, target: [0, 2.5, 0] as V3 }
 
-export type PhotoKey = 'actual_1' | 'actual_2' | 'actual_3' | 'actual_4' | 'actual_5'
+export type Zone = 'ext' | 'sal' | 'gal' | 'ofi'
+export const ZONES: Record<Zone, string> = { ext: 'Exterior · Gdor. Tello', sal: 'Salón de ventas', gal: 'Galpón / depósito', ofi: 'Oficina' }
+export const ZONE_HOTSPOT: Record<Zone, string> = { ext: 'D', sal: 'C', gal: 'B', ofi: 'B' }
 
-export const PHOTOS: Record<PhotoKey, { file: string; short: string; caption: string; hotspot: string }> = {
-  actual_1: { file: 'actual_1.jpg', short: 'Fachada · Gdor. Tello 437', caption: 'Fachada con cartel ORIFAEL, portón metálico, afiches de bebidas y pizarras de ofertas', hotspot: 'D' },
-  actual_2: { file: 'actual_2.jpg', short: 'Mostrador y atención', caption: 'Mostrador con mamparas, exhibidores y carteles "Atención: revise su mercadería" y "Lo estamos filmando"', hotspot: 'D' },
-  actual_3: { file: 'actual_3.jpg', short: 'Pasillo de atención', caption: 'Pasillo de cemento alisado con freezer de helados, heladeras exhibidoras y cielorraso de machimbre', hotspot: 'C' },
-  actual_4: { file: 'actual_4.jpg', short: 'Góndolas y vitrinas', caption: 'Góndolas con bebidas y artículos de limpieza, vitrinas y luminarias LED', hotspot: 'A' },
-  actual_5: { file: 'actual_5.jpg', short: 'Depósito de stock', caption: 'Racks metálicos naranjas con pallets de bebidas y packs en el depósito', hotspot: 'B' },
-}
+export const PHOTOS = {
+  ext_1: { file: 'ext_1.jpg', zone: 'ext', short: 'Calle Gdor. Tello', caption: 'Calle Gdor. Tello: vereda, cantero central y alumbrado' },
+  ext_2: { file: 'ext_2.jpg', zone: 'ext', short: 'Cantero frente al local', caption: 'Cantero y luminarias frente a la distribuidora' },
+  ext_3: { file: 'ext_3.jpg', zone: 'ext', short: 'Fachada en perspectiva', caption: 'Fachada con alero iluminado, cartel ORIFAEL y medianera' },
+  ext_4: { file: 'ext_4.jpg', zone: 'ext', short: 'Frente del local', caption: 'Frente: portón vehicular cerrado y local con cartel ORIFAEL' },
+  ext_5: { file: 'ext_5.jpg', zone: 'ext', short: 'Ingreso al salón', caption: 'Ingreso al salón con pizarras de precios y freezers' },
+  ext_6: { file: 'ext_6.jpg', zone: 'ext', short: 'Portón vehicular', caption: 'Portón metálico enrollable, pizarra de ofertas y vereda' },
+  ext_7: { file: 'ext_7.jpg', zone: 'ext', short: 'Vista de la cuadra', caption: 'Vista de la cuadra sobre Gdor. Tello' },
+  ext_8: { file: 'ext_8.jpg', zone: 'ext', short: 'Cartel y afiches', caption: 'Cartel ORIFAEL, afiches de bebidas, pizarras y cajones Quilmes' },
+  sal_1: { file: 'sal_1.jpg', zone: 'sal', short: 'Heladeras del salón', caption: 'Heladeras exhibidoras, góndolas y cielorraso de machimbre' },
+  sal_2: { file: 'sal_2.jpg', zone: 'sal', short: 'Pasillo del salón', caption: 'Pasillo del salón: góndolas, freezers y línea de heladeras' },
+  sal_3: { file: 'sal_3.jpg', zone: 'sal', short: 'Heladeras Coca-Cola', caption: 'Heladeras de bebidas y cielorraso de madera con paneles LED' },
+  sal_4: { file: 'sal_4.jpg', zone: 'sal', short: 'Mostrador y atención', caption: 'Mostrador con mamparas y carteles "Atención: revise su mercadería" y "Lo estamos filmando"' },
+  sal_5: { file: 'sal_5.jpg', zone: 'sal', short: 'Pasillo de atención', caption: 'Pasillo de atención con freezer de helados y heladeras' },
+  sal_6: { file: 'sal_6.jpg', zone: 'sal', short: 'Góndolas y vitrinas', caption: 'Góndolas con bebidas y artículos de limpieza, vitrinas y luminarias LED' },
+  gal_1: { file: 'gal_1.jpg', zone: 'gal', short: 'Depósito y utilitario', caption: 'Depósito: racks naranjas, cajones Quilmes y utilitario blanco' },
+  gal_2: { file: 'gal_2.jpg', zone: 'gal', short: 'Losa y columnas', caption: 'Losa y vigas de H°A°, columna con zócalo negro y utilitario estacionado' },
+  gal_3: { file: 'gal_3.jpg', zone: 'gal', short: 'Nave del depósito', caption: 'Nave del depósito con pasillo central de cemento alisado' },
+  gal_4: { file: 'gal_4.jpg', zone: 'gal', short: 'Revestimiento de madera', caption: 'Revestimiento de madera de pallet, tableros eléctricos y estanterías' },
+  gal_5: { file: 'gal_5.jpg', zone: 'gal', short: 'Racks de stock', caption: 'Racks metálicos con pallets y packs de bebidas' },
+  gal_6: { file: 'gal_6.jpg', zone: 'gal', short: 'Cajones y oficina', caption: 'Estiba de cajones Quilmes y puerta de madera de la oficina' },
+  gal_7: { file: 'gal_7.jpg', zone: 'gal', short: 'Ladrillo visto', caption: 'Ladrillo visto con estiba de cajones de bebidas' },
+  gal_8: { file: 'gal_8.jpg', zone: 'gal', short: 'Portón trasero', caption: 'Portón trasero enrollable y cajones apilados' },
+  gal_9: { file: 'gal_9.jpg', zone: 'gal', short: 'Box de madera', caption: 'Estiba de cajones frente al box de oficina revestido en madera' },
+  ofi_1: { file: 'ofi_1.jpg', zone: 'ofi', short: 'Oficina', caption: 'Oficina revestida en madera de pallet con ventana' },
+  ofi_2: { file: 'ofi_2.jpg', zone: 'ofi', short: 'Oficina · muro', caption: 'Muro de la oficina en tablas de pallet' },
+  ofi_3: { file: 'ofi_3.jpg', zone: 'ofi', short: 'Oficina · escritorio', caption: 'Escritorio de administración en la oficina' },
+  ofi_4: { file: 'ofi_4.jpg', zone: 'ofi', short: 'Oficina · administración', caption: 'Puesto de administración y facturación' },
+} satisfies Record<string, { file: string; zone: Zone; short: string; caption: string }>
+export type PhotoKey = keyof typeof PHOTOS
+export const photoSrc = (k: PhotoKey) => `${import.meta.env.BASE_URL}textures/${PHOTOS[k].file}`
+export const thumbSrc = (k: PhotoKey) => `${import.meta.env.BASE_URL}textures/thumbs/${PHOTOS[k].file}`
 export const PHOTO_KEYS = Object.keys(PHOTOS) as PhotoKey[]
 
 export const PICKUP = { x: -9.6, z: -7.9, rotY: 0 }
@@ -89,8 +116,8 @@ export type Hotspot = {
 
 export const HOTSPOTS: Hotspot[] = [
   {
-    photo: 'actual_4',
-    twin: 'Cielorraso de machimbre con luminarias LED relevado en el salón; en el galpón, 7 cabriadas de acero de 20 m de luz.',
+    photo: 'gal_2',
+    twin: 'En el depósito real: losa y vigas de H°A° con columnas a la vista; en el gemelo, 7 cabriadas de acero de 20 m de luz.',
     id: 'A',
     label: 'Techo',
     zone: 'Cubierta',
@@ -101,8 +128,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [-6.5, 5.6, 4.5], look: [0, 7.15, -2.2] },
   },
   {
-    photo: 'actual_5',
-    twin: 'Racks de 3 niveles con pallets de bebidas, como en el depósito real.',
+    photo: 'gal_1',
+    twin: 'Racks con largueros naranjas y estibas de cajones Quilmes, como en el depósito relevado.',
     id: 'B',
     label: 'Pasillo 1',
     zone: 'Stock',
@@ -113,8 +140,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [-6, EYE, 4.6], look: [-6, 2.2, -0.5] },
   },
   {
-    photo: 'actual_3',
-    twin: 'Piso de cemento alisado, ladrillo visto y H°A° a la vista; freezer y heladeras del pasillo de atención.',
+    photo: 'sal_2',
+    twin: 'Piso de cemento alisado; heladeras, freezers, góndolas y cielorraso de machimbre del salón.',
     id: 'C',
     label: 'Piso',
     zone: 'Solado',
@@ -125,8 +152,8 @@ export const HOTSPOTS: Hotspot[] = [
     view: { pos: [6.5, EYE, 9.2], look: [3.2, 0.3, 7.2] },
   },
   {
-    photo: 'actual_1',
-    twin: 'Cartel real ORIFAEL, portón metálico, afiches de bebidas, pizarra de ofertas y cajones Quilmes en el acceso.',
+    photo: 'ext_4',
+    twin: 'Cartel ORIFAEL, portón vehicular, alero iluminado, afiches y pizarras de ofertas en el ingreso.',
     id: 'D',
     label: 'Entrada',
     zone: 'Acceso',
@@ -153,12 +180,13 @@ export const COLLIDERS: Box2[] = [
   box(-12.7, -8.2, 6.2, 7.0, 1.2),
   box(-14.9, -14.3, 5.9, 9.7, 2.1),
   box(-13.4, -11.0, 9.25, 9.75, 2.1),
-  box(PICKUP.x - 2.75, PICKUP.x + 2.75, PICKUP.z - 1.0, PICKUP.z + 1.0, 2.4),
+  box(PICKUP.x - 2.95, PICKUP.x + 3.4, PICKUP.z - 1.0, PICKUP.z + 1.0, 2.4),
   box(STAIRS.x0 - 0.1, 14.9, STAIRS.zTop, STAIRS.zBottom + 0.1, STAIRS.h + 0.2),
   box(12.0, 12.45, -8.75, -8.3, STAIRS.h),
   ...BEV_PALLETS.map(([x, z]) => box(x - 0.65, x + 0.65, z - 0.55, z + 0.55, 1.7)),
   box(-14.9, -8.6, 5.05, 5.45, 3.2),
   box(-8.0, -4.6, 9.1, 9.95, 2.1),
+  box(2.2, 5.9, -9.85, -8.45, 2.0),
   box(-13.35, -12.65, 6.4, 7.1, 1.6),
   box(-1.4, 1.4, -23.5, -10.45, 4.2),
   box(2.9, 5.1, -8.4, -6.4, 2.4),

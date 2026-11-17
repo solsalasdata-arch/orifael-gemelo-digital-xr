@@ -201,6 +201,7 @@ function Columns() {
         return (
           <group key={i}>
             <SBox pos={[x, h / 2, z]} size={[0.4, h, 0.4]} material={columnMat()} bimMaterial={bimSolidMat()} />
+            <SBox pos={[x, 0.8, z]} size={[0.42, 1.6, 0.42]} material={darkSteelMat()} bimMaterial={bimSolidMat()} edges={false} />
             <SBox pos={[x, 0.03, z]} size={[0.6, 0.06, 0.6]} material={darkSteelMat()} bimMaterial={bimSolidMat()} edges={false} />
           </group>
         )
