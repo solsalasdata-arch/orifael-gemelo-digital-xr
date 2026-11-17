@@ -1,0 +1,430 @@
+import { useMemo } from 'react'
+import * as THREE from 'three'
+import { BAY_CENTERS, BOTTOM_CHORD, HALF_D, HALF_W, RACK_ROWS, RACK_Z0, RACK_Z1 } from '../data'
+import { bordoMat, darkSteelMat, glassMat, lampMat, mintGlowMat, rubberMat, whiteMat, yellowMat } from '../materials'
+import { asphaltTex, repeated, sidewalkTex, signTex, type SignStyle } from '../textures'
+import { InstancedBoxes, boxAt } from './Instanced'
+
+type PanelProps = {
+  id: string
+  lines: string[]
+  style: SignStyle
+  size: [number, number]
+  position: [number, number, number]
+  rotationY?: number
+  glow?: number
+  twoSided?: boolean
+  frame?: boolean
+  res?: [number, number]
+}
+
+export function LightPanel({ id, lines, style, size, position, rotationY = 0, glow = 1.2, twoSided = false, frame = true, res }: PanelProps) {
+  const tex = useMemo(() => signTex(id, lines, style, res?.[0], res?.[1]), [id, lines, style, res])
+  const mat = useMemo(
+    () => new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: '#ffffff', emissiveIntensity: glow, roughness: 0.4, toneMapped: false }),
+    [tex, glow],
+  )
+  return (
+    <group position={position} rotation-y={rotationY}>
+      {frame && (
+        <mesh material={darkSteelMat()} castShadow>
+          <boxGeometry args={[size[0] + 0.12, size[1] + 0.12, 0.1]} />
+        </mesh>
+      )}
+      <mesh position-z={0.056} material={mat}>
+        <planeGeometry args={size} />
+      </mesh>
+      {twoSided && (
+        <mesh position-z={-0.056} rotation-y={Math.PI} material={mat}>
+          <planeGeometry args={size} />
+        </mesh>
+      )}
+    </group>
+  )
+}
+
+function Hanging({ y, top = BOTTOM_CHORD, children, x, z, half }: { y: number; top?: number; x: number; z: number; half: number; children: React.ReactNode }) {
+  return (
+    <group>
+      {[-half, half].map((dx) => (
+        <mesh key={dx} position={[x + dx, (y + top) / 2, z]} material={darkSteelMat()}>
+          <cylinderGeometry args={[0.012, 0.012, top - y, 4]} />
+        </mesh>
+      ))}
+      {children}
+    </group>
+  )
+}
+
+function Signage() {
+  return (
+    <group>
+      <LightPanel
+        id="brand-back"
+        lines={['DISTRIBUIDORA ORIFAEL', 'Centro Logístico Jujuy']}
+        style="brand"
+        size={[10, 2.5]}
+        position={[0, 5.3, -HALF_D + 0.08]}
+        glow={1.6}
+        res={[2048, 512]}
+      />
+      <LightPanel
+        id="brand-front"
+        lines={['DISTRIBUIDORA ORIFAEL', 'Centro Logístico Jujuy · Gdor. Tello 437']}
+        style="brand"
+        size={[9, 1.8]}
+        position={[0, 5.75, HALF_D + 0.32]}
+        glow={1.4}
+        res={[2048, 410]}
+      />
+      <Hanging x={0} z={-1.5} y={5.6} half={2.6}>
+        <LightPanel
+          id="brand-hang"
+          lines={['DISTRIBUIDORA ORIFAEL', 'Centro Logístico Jujuy']}
+          style="brand"
+          size={[5.6, 1.1]}
+          position={[0, 5.6, -1.5]}
+          twoSided
+          glow={1.5}
+          res={[1536, 300]}
+        />
+      </Hanging>
+      {RACK_ROWS.slice(0, 3).map((c, i) => {
+        const x = c + 3
+        const labels = [
+          ['1', 'PASILLO 1', 'Almacén general · Secos'],
+          ['2', 'PASILLO 2 · CENTRAL', 'Bebidas y alto rotación'],
+          ['3', 'PASILLO 3', 'Limpieza y bazar'],
+        ][i]
+        return (
+          <Hanging key={i} x={x} z={RACK_Z1 + 0.6} y={4.9} half={0.9}>
+            <LightPanel id={`aisle-${i}`} lines={labels} style="aisle" size={[2.4, 0.6]} position={[x, 4.9, RACK_Z1 + 0.6]} twoSided glow={1.1} />
+          </Hanging>
+        )
+      })}
+      <Hanging x={-10.6} z={6.2} y={4.4} half={1.3}>
+        <LightPanel id="recep" lines={['RECEPCIÓN', 'Mostrador comercial · Atención al cliente']} style="zone" size={[3, 0.75]} position={[-10.6, 4.4, 6.2]} twoSided glow={1} />
+      </Hanging>
+      <Hanging x={0} z={-7.2} y={5.0} half={1.7}>
+        <LightPanel id="despacho" lines={['ZONA DE DESPACHO', 'Carga y descarga · Muelles 1 – 3']} style="zone" size={[4, 1]} position={[0, 5.0, -7.2]} twoSided glow={1} />
+      </Hanging>
+      <Hanging x={11.6} z={6.0} y={4.4} half={1.2}>
+        <LightPanel id="picking" lines={['PICKING', 'Preparación de pedidos']} style="zone" size={[2.8, 0.7]} position={[11.6, 4.4, 6.0]} twoSided glow={1} />
+      </Hanging>
+      {[-8, 0, 8].map((x, i) => (
+        <LightPanel key={x} id={`dock-${i}`} lines={[`MUELLE ${i + 1}`, i === 1 ? 'EN OPERACIÓN' : 'DISPONIBLE']} style="zone" size={[1.6, 0.45]} position={[x, 4.75, -HALF_D + 0.1]} glow={1} />
+      ))}
+    </group>
+  )
+}
+
+function Reception() {
+  return (
+    <group>
+      {/* counter */}
+      <mesh position={[-10.5, 0.55, 6.6]} material={bordoMat()} castShadow receiveShadow>
+        <boxGeometry args={[4.2, 1.1, 0.7]} />
+      </mesh>
+      <mesh position={[-8.6, 0.55, 7.25]} material={bordoMat()} castShadow receiveShadow>
+        <boxGeometry args={[0.6, 1.1, 2]} />
+      </mesh>
+      <mesh position={[-10.5, 1.13, 6.6]} material={whiteMat()} castShadow>
+        <boxGeometry args={[4.4, 0.06, 0.9]} />
+      </mesh>
+      <mesh position={[-8.6, 1.13, 7.25]} material={whiteMat()} castShadow>
+        <boxGeometry args={[0.8, 0.06, 2.2]} />
+      </mesh>
+      <mesh position={[-10.5, 0.98, 6.96]} material={mintGlowMat()}>
+        <boxGeometry args={[4.2, 0.03, 0.02]} />
+      </mesh>
+      <mesh position={[-8.29, 0.98, 7.25]} material={mintGlowMat()}>
+        <boxGeometry args={[0.02, 0.03, 2]} />
+      </mesh>
+      <LightPanel id="counter-logo" lines={['ORIFAEL', 'Distribuidora']} style="brand" size={[1.8, 0.45]} position={[-10.5, 0.62, 6.97]} frame={false} glow={1.2} res={[1024, 256]} />
+      {[-11.4, -9.6].map((x) => (
+        <group key={x} position={[x, 1.16, 6.45]}>
+          <mesh position-y={0.24} material={darkSteelMat()}>
+            <boxGeometry args={[0.55, 0.34, 0.03]} />
+          </mesh>
+          <mesh position={[0, 0.24, 0.017]}>
+            <planeGeometry args={[0.5, 0.3]} />
+            <meshStandardMaterial color="#0c2b2b" emissive="#A8E6CF" emissiveIntensity={0.25} />
+          </mesh>
+          <mesh position-y={0.04} material={darkSteelMat()}>
+            <boxGeometry args={[0.06, 0.08, 0.06]} />
+          </mesh>
+        </group>
+      ))}
+      {/* back partition with brand */}
+      <mesh position={[-11.75, 1.6, 5.25]} material={darkSteelMat()} castShadow receiveShadow>
+        <boxGeometry args={[6.3, 3.2, 0.2]} />
+      </mesh>
+      <LightPanel id="recep-wall" lines={['DISTRIBUIDORA ORIFAEL', 'Atención comercial · Lun a Sáb']} style="brand" size={[4.6, 1.15]} position={[-11.75, 2.1, 5.36]} frame={false} glow={1.3} res={[1600, 400]} />
+      {/* glass office */}
+      <group position={[-13.4, 0, 8.4]}>
+        <mesh position={[0, 1.4, -0.95]} material={glassMat()}>
+          <boxGeometry args={[2.8, 2.8, 0.04]} />
+        </mesh>
+        <mesh position={[1.4, 1.4, 0]} material={glassMat()}>
+          <boxGeometry args={[0.04, 2.8, 1.9]} />
+        </mesh>
+        <mesh position={[0, 2.82, 0]} material={darkSteelMat()}>
+          <boxGeometry args={[2.85, 0.05, 1.95]} />
+        </mesh>
+        <mesh position={[0, 0.75, 0.2]} material={whiteMat()} castShadow>
+          <boxGeometry args={[1.4, 0.05, 0.7]} />
+        </mesh>
+      </group>
+      {/* bench + plant */}
+      <mesh position={[-6.6, 0.25, 9.2]} material={darkSteelMat()} castShadow>
+        <boxGeometry args={[1.8, 0.45, 0.5]} />
+      </mesh>
+      <group position={[-5.4, 0, 9.3]}>
+        <mesh position-y={0.25} material={bordoMat()} castShadow>
+          <cylinderGeometry args={[0.25, 0.2, 0.5, 16]} />
+        </mesh>
+        <mesh position-y={0.85} castShadow>
+          <icosahedronGeometry args={[0.45, 1]} />
+          <meshStandardMaterial color="#3e7d4f" roughness={0.8} flatShading />
+        </mesh>
+      </group>
+      {/* digital twin totem */}
+      <group position={[-3.8, 0, 8.4]} rotation-y={0.5}>
+        <mesh position-y={0.9} material={darkSteelMat()} castShadow>
+          <boxGeometry args={[0.7, 1.8, 0.12]} />
+        </mesh>
+        <LightPanel id="totem" lines={['GEMELO DIGITAL', 'Orifael · XR', 'Escaneá y recorré']} style="screen" size={[0.6, 1.0]} position={[0, 1.15, 0.03]} frame={false} glow={1.1} res={[512, 860]} />
+      </group>
+      {/* picking tables */}
+      {[10.9, 13.1].map((x) => (
+        <group key={x} position={[x, 0, 8.7]}>
+          <mesh position-y={0.9} material={whiteMat()} castShadow receiveShadow>
+            <boxGeometry args={[1.9, 0.05, 0.9]} />
+          </mesh>
+          {[-0.85, 0.85].map((dx) =>
+            [-0.38, 0.38].map((dz) => (
+              <mesh key={`${dx}${dz}`} position={[dx, 0.45, dz]} material={darkSteelMat()}>
+                <boxGeometry args={[0.05, 0.9, 0.05]} />
+              </mesh>
+            )),
+          )}
+        </group>
+      ))}
+    </group>
+  )
+}
+
+function Forklift({ position, rotationY = 0 }: { position: [number, number, number]; rotationY?: number }) {
+  return (
+    <group position={position} rotation-y={rotationY}>
+      <mesh position={[0, 0.65, 0]} material={yellowMat()} castShadow>
+        <boxGeometry args={[1.1, 0.9, 1.9]} />
+      </mesh>
+      <mesh position={[0, 0.65, -0.9]} material={darkSteelMat()} castShadow>
+        <boxGeometry args={[1.0, 0.8, 0.5]} />
+      </mesh>
+      {[-0.45, 0.45].map((x) =>
+        [-0.4, 0.75].map((z) => (
+          <mesh key={`${x}${z}`} position={[x, 1.55, z]} material={darkSteelMat()} castShadow>
+            <boxGeometry args={[0.06, 1.0, 0.06]} />
+          </mesh>
+        )),
+      )}
+      <mesh position={[0, 2.07, 0.17]} material={darkSteelMat()} castShadow>
+        <boxGeometry args={[1.0, 0.05, 1.3]} />
+      </mesh>
+      {[-0.35, 0.35].map((x) => (
+        <mesh key={x} position={[x, 1.4, 1.05]} material={darkSteelMat()} castShadow>
+          <boxGeometry args={[0.1, 2.6, 0.12]} />
+        </mesh>
+      ))}
+      {[-0.25, 0.25].map((x) => (
+        <mesh key={x} position={[x, 0.08, 1.7]} material={darkSteelMat()} castShadow>
+          <boxGeometry args={[0.12, 0.05, 1.2]} />
+        </mesh>
+      ))}
+      {[-0.55, 0.55].map((x) =>
+        [-0.6, 0.6].map((z) => (
+          <mesh key={`${x}${z}`} position={[x, 0.28, z]} rotation-z={Math.PI / 2} material={rubberMat()} castShadow>
+            <cylinderGeometry args={[0.28, 0.28, 0.22, 16]} />
+          </mesh>
+        )),
+      )}
+    </group>
+  )
+}
+
+function Truck() {
+  const side = useMemo(() => signTex('truck', ['ORIFAEL', 'Distribuidora · Jujuy'], 'brand', 1024, 256), [])
+  return (
+    <group position={[0, 0, -HALF_D - 0.5]}>
+      <mesh position={[0, 2.5, -4.2]} castShadow receiveShadow>
+        <boxGeometry args={[2.5, 2.7, 8]} />
+        <meshStandardMaterial color="#f2f3f4" metalness={0.3} roughness={0.4} />
+      </mesh>
+      {[-1, 1].map((s) => (
+        <mesh key={s} position={[s * 1.26, 2.7, -4.2]} rotation-y={(s * Math.PI) / 2}>
+          <planeGeometry args={[6, 1.5]} />
+          <meshStandardMaterial map={side} emissiveMap={side} emissive="#ffffff" emissiveIntensity={0.25} />
+        </mesh>
+      ))}
+      <mesh position={[0, 1.05, -4.2]} material={darkSteelMat()} castShadow>
+        <boxGeometry args={[2.2, 0.3, 8]} />
+      </mesh>
+      <group position={[0, 0, -9.6]}>
+        <mesh position={[0, 1.75, 0]} material={bordoMat()} castShadow>
+          <boxGeometry args={[2.45, 2.3, 2.3]} />
+        </mesh>
+        <mesh position={[0, 2.25, -1.16]}>
+          <planeGeometry args={[2.1, 0.9]} />
+          <meshStandardMaterial color="#1b2733" metalness={0.8} roughness={0.1} />
+        </mesh>
+      </group>
+      {[-1.05, 1.05].map((x) =>
+        [-1.5, -2.6, -7.3, -9.9].map((z) => (
+          <mesh key={`${x}${z}`} position={[x, 0.48, z]} rotation-z={Math.PI / 2} material={rubberMat()} castShadow>
+            <cylinderGeometry args={[0.48, 0.48, 0.35, 20]} />
+          </mesh>
+        )),
+      )}
+    </group>
+  )
+}
+
+function Lamps() {
+  const data = useMemo(() => {
+    const housings: THREE.Matrix4[] = []
+    const bulbs: THREE.Matrix4[] = []
+    BAY_CENTERS.forEach((x) =>
+      [-6.5, 0, 6.5].forEach((z) => {
+        housings.push(boxAt(x, BOTTOM_CHORD - 0.35, z, 0.55, 0.22, 0.55))
+        housings.push(boxAt(x, BOTTOM_CHORD - 0.12, z, 0.02, 0.24, 0.02))
+        bulbs.push(boxAt(x, BOTTOM_CHORD - 0.47, z, 0.48, 0.02, 0.48))
+      }),
+    )
+    return { housings, bulbs }
+  }, [])
+  return (
+    <group>
+      <InstancedBoxes matrices={data.housings} material={darkSteelMat()} castShadow={false} />
+      <InstancedBoxes matrices={data.bulbs} material={lampMat()} castShadow={false} receiveShadow={false} />
+    </group>
+  )
+}
+
+function FloorMarkings() {
+  const data = useMemo(() => {
+    const yellow: THREE.Matrix4[] = []
+    const green: THREE.Matrix4[] = []
+    const lw = 0.1
+    RACK_ROWS.forEach((c) => {
+      ;[-1.35, 1.35].forEach((dx) => yellow.push(boxAt(c + dx, 0.004, (RACK_Z0 + RACK_Z1) / 2, lw, 0.004, RACK_Z1 - RACK_Z0 + 0.6)))
+    })
+    yellow.push(boxAt(0, 0.004, -8.0, 26, 0.004, lw))
+    yellow.push(boxAt(0, 0.004, RACK_Z1 + 1.1, 28, 0.004, lw))
+    ;[-1, 1].forEach((s) => {
+      green.push(boxAt(s * 1.0, 0.004, 7.5, lw, 0.004, 5))
+    })
+    return { yellow, green }
+  }, [])
+  return (
+    <group>
+      <InstancedBoxes matrices={data.yellow} material={yellowMat()} castShadow={false} />
+      <InstancedBoxes matrices={data.green} material={mintGlowMat()} castShadow={false} />
+    </group>
+  )
+}
+
+function Mountains() {
+  const peaks = useMemo(() => {
+    const p: { x: number; z: number; r: number; h: number; c: string }[] = []
+    const cols = ['#7a5b45', '#8a6a4f', '#6d5a4a', '#5f6b4a', '#93705a']
+    for (let i = 0; i < 26; i++) {
+      const a = (i / 26) * Math.PI * 2
+      const d = 150 + ((i * 37) % 60)
+      p.push({ x: Math.cos(a) * d, z: Math.sin(a) * d, r: 30 + ((i * 13) % 25), h: 28 + ((i * 17) % 34), c: cols[i % cols.length] })
+    }
+    return p
+  }, [])
+  return (
+    <group>
+      {peaks.map((p, i) => (
+        <mesh key={i} position={[p.x, p.h / 2 - 2, p.z]} rotation-y={i}>
+          <coneGeometry args={[p.r, p.h, 6]} />
+          <meshStandardMaterial color={p.c} roughness={1} flatShading />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+function Exterior() {
+  const street = useMemo(() => repeated(asphaltTex(), 20, 2), [])
+  const walk = useMemo(() => repeated(sidewalkTex(), 30, 1.5), [])
+  const dashes = useMemo(() => {
+    const m: THREE.Matrix4[] = []
+    for (let x = -58; x <= 58; x += 4) m.push(boxAt(x, 0.012, 17.3, 2, 0.004, 0.14))
+    return m
+  }, [])
+  const trees = [-24, -19, 19, 24, 30, -30]
+  return (
+    <group>
+      <mesh rotation-x={-Math.PI / 2} position-y={-0.03} receiveShadow>
+        <planeGeometry args={[400, 400]} />
+        <meshStandardMaterial color="#a89a80" roughness={0.97} />
+      </mesh>
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0.005, 17.3]} receiveShadow>
+        <planeGeometry args={[120, 8.2]} />
+        <meshStandardMaterial map={street} color="#6a6d70" roughness={0.9} />
+      </mesh>
+      <InstancedBoxes matrices={dashes} material={whiteMat()} castShadow={false} />
+      <mesh position={[0, 0.08, HALF_D + 1.6]} receiveShadow>
+        <boxGeometry args={[120, 0.16, 2.8]} />
+        <meshStandardMaterial map={walk} roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.03, -HALF_D - 7]} rotation-x={-Math.PI / 2} receiveShadow>
+        <planeGeometry args={[HALF_W * 2 + 6, 14]} />
+        <meshStandardMaterial color="#8f8e8a" roughness={0.9} />
+      </mesh>
+      <group position={[-HALF_W - 2.2, 0, HALF_D + 2.4]}>
+        <mesh position-y={1.6} material={darkSteelMat()} castShadow>
+          <cylinderGeometry args={[0.05, 0.05, 3.2, 8]} />
+        </mesh>
+        <LightPanel id="street" lines={['Gdor. Tello', '437 · S. S. de Jujuy']} style="street" size={[1.5, 0.42]} position={[0, 3.0, 0]} glow={0.4} twoSided res={[768, 215]} />
+      </group>
+      <group position={[2.9, 3.6, HALF_D + 0.3]}>
+        <LightPanel id="numero" lines={['437', 'Gdor. Tello']} style="street" size={[0.7, 0.35]} position={[0, 0, 0]} glow={0.5} res={[512, 256]} />
+      </group>
+      {trees.map((x, i) => (
+        <group key={i} position={[x, 0, HALF_D + 2.2]}>
+          <mesh position-y={1.2} castShadow>
+            <cylinderGeometry args={[0.12, 0.16, 2.4, 8]} />
+            <meshStandardMaterial color="#5a4330" roughness={1} />
+          </mesh>
+          <mesh position-y={3.1} castShadow>
+            <icosahedronGeometry args={[1.4, 1]} />
+            <meshStandardMaterial color={i % 2 ? '#4f8a4a' : '#3f7a45'} roughness={0.9} flatShading />
+          </mesh>
+        </group>
+      ))}
+      <Mountains />
+    </group>
+  )
+}
+
+export function Zones() {
+  return (
+    <group>
+      <Signage />
+      <Reception />
+      <Forklift position={[4.0, 0, -7.4]} rotationY={-Math.PI / 2 + 0.3} />
+      <Truck />
+      <Lamps />
+      <FloorMarkings />
+      <Exterior />
+      <mesh position={[-HALF_W + 0.4, 1.2, 2]} material={new THREE.MeshStandardMaterial({ color: '#c62828' })}>
+        <cylinderGeometry args={[0.1, 0.1, 0.5, 12]} />
+      </mesh>
+    </group>
+  )
+}
